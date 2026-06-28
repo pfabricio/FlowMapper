@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/BasicMapping/BasicMapping.csproj" />
+    <Project Path="samples/Benchmark/Benchmark.csproj" />
+    <Project Path="samples/ConstructorMapping/ConstructorMapping.csproj" />
+    <Project Path="samples/DependencyInjection/DependencyInjection.csproj" />
+    <Project Path="samples/FlattenMapping/FlattenMapping.csproj" />
+    <Project Path="samples/NestedMapping/NestedMapping.csproj" />
+    <Project Path="samples/Profiles/Profiles.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/FlowMapper.Abstractions/FlowMapper.Abstractions.csproj" />
+    <Project Path="src/FlowMapper.Analyzers/FlowMapper.Analyzers.csproj" />
+    <Project Path="src/FlowMapper.Cli/FlowMapper.Cli.csproj" />
+    <Project Path="src/FlowMapper.Core/FlowMapper.Core.csproj" />
+    <Project Path="src/FlowMapper.DependencyInjection/FlowMapper.DependencyInjection.csproj" />
+    <Project Path="src/FlowMapper.SourceGenerator/FlowMapper.SourceGenerator.csproj" />
+    <Project Path="src/FlowMapper/FlowMapper.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FlowMapper.SnapshotTests/FlowMapper.SnapshotTests.csproj" />
+  </Folder>
+</Solution>
