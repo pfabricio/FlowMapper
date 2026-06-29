@@ -19,5 +19,9 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/FlowMapper.SnapshotTests/FlowMapper.SnapshotTests.csproj" />
+    <Project Path="tests/FlowMapper.Generator.Tests/FlowMapper.Generator.Tests.csproj" />
+    <Project Path="tests/FlowMapper.IntegrationTests/FlowMapper.IntegrationTests.csproj" />
+    <Project Path="tests/FlowMapper.UnitTests/FlowMapper.UnitTests.csproj" />
+    <Project Path="tests/FlowMapper.PerformanceTests/FlowMapper.PerformanceTests.csproj" />
   </Folder>
 </Solution>

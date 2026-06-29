@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.microsoft.com/packaging/2010/07/manifest" Target="/FlowMapper.SourceGenerator.nuspec" Id="RBAEF6E4F2F8ACAA3" />
+  <Relationship Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="/package/services/metadata/core-properties/eb99619199c6479b8ceea6f7afbfc5be.psmdcp" Id="R66A56051AA53A4CC" />
+</Relationships>

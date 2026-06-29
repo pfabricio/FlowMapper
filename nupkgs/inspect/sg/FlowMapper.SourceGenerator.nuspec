@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>FlowMapper.SourceGenerator</id>
+    <version>1.0.0</version>
+    <authors>FlowMapper</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <projectUrl>https://github.com/anomalyco/FlowMapper</projectUrl>
+    <description>Roslyn Source Generator that produces compile-time object mapper code for FlowMapper</description>
+    <tags>mapper object-mapper source-generator roslyn compile-time</tags>
+    <repository type="git" url="https://github.com/anomalyco/FlowMapper.git" commit="110592c928d51edd866e54e1da82d9ce48edd047" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="FlowMapper.Abstractions" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.CodeAnalysis.CSharp" version="4.8.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+
+    <!-- Informações de pacote -->
+    <Description>FlowMapper abstractions: mapping attributes, IMapper interface, and configuration types</Description>
   </PropertyGroup>
 
 </Project>

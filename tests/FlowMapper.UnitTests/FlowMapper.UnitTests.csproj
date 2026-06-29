@@ -15,6 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\FlowMapper.Core\FlowMapper.Core.csproj" />
+    <ProjectReference Include="..\..\src\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
