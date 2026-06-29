@@ -3,6 +3,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+.opencode/
 [Ss]pecs/
 [Dd]ebug/
 [Dd]ebugPublic/
