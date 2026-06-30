@@ -54,7 +54,7 @@ jobs:
 
       - run: dotnet build ${{ env.SLNX }} --no-restore -c Release
 
-      - run: dotnet pack ${{ env.SLNX }} -c Release -o nupkgs -p:Version=${{ steps.version.outputs.VERSION }} --no-build
+      - run: dotnet pack ${{ env.SLNX }} -c Release -o nupkgs -p:Version=${{ steps.version.outputs.VERSION }}
 
       - name: Push to NuGet.org
         run: |
