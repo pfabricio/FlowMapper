@@ -27,11 +27,12 @@ jobs:
       - name: Run tests
         shell: bash
         run: |
+          set +e
           exitcode=0
-          dotnet test tests/FlowMapper.UnitTests/FlowMapper.UnitTests.csproj --no-build --no-restore -c Release --verbosity normal || exitcode=$?
-          dotnet test tests/FlowMapper.SnapshotTests/FlowMapper.SnapshotTests.csproj --no-build --no-restore -c Release --verbosity normal || exitcode=$?
-          dotnet test tests/FlowMapper.IntegrationTests/FlowMapper.IntegrationTests.csproj --no-build --no-restore -c Release --verbosity normal || exitcode=$?
-          dotnet test tests/FlowMapper.Generator.Tests/FlowMapper.Generator.Tests.csproj --no-build --no-restore -c Release --verbosity normal || exitcode=$?
+          dotnet test tests/FlowMapper.UnitTests/FlowMapper.UnitTests.csproj --no-build --no-restore -c Release --verbosity normal --logger "console;verbosity=detailed" 2>&1 || exitcode=$?
+          dotnet test tests/FlowMapper.SnapshotTests/FlowMapper.SnapshotTests.csproj --no-build --no-restore -c Release --verbosity normal --logger "console;verbosity=detailed" 2>&1 || exitcode=$?
+          dotnet test tests/FlowMapper.IntegrationTests/FlowMapper.IntegrationTests.csproj --no-build --no-restore -c Release --verbosity normal --logger "console;verbosity=detailed" 2>&1 || exitcode=$?
+          dotnet test tests/FlowMapper.Generator.Tests/FlowMapper.Generator.Tests.csproj --no-build --no-restore -c Release --verbosity normal --logger "console;verbosity=detailed" 2>&1 || exitcode=$?
           exit $exitcode
 
   publish:
