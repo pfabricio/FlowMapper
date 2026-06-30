@@ -7,8 +7,10 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>true</IsPackable>
 
     <!-- Informações de pacote -->
+    <PackageId>FlowMapper.Core</PackageId>
     <Description>FlowMapper core domain models for mapping pipeline construction</Description>
   </PropertyGroup>
 

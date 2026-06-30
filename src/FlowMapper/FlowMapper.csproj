@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>true</IsPackable>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <!-- Informações de pacote -->
     <PackageId>FlowMapper</PackageId>
@@ -12,35 +11,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj">
-      <PrivateAssets>all</PrivateAssets>
-    </ProjectReference>
-    <ProjectReference Include="..\FlowMapper.Core\FlowMapper.Core.csproj">
-      <PrivateAssets>all</PrivateAssets>
-    </ProjectReference>
-    <ProjectReference Include="..\FlowMapper.DependencyInjection\FlowMapper.DependencyInjection.csproj">
-      <PrivateAssets>all</PrivateAssets>
-    </ProjectReference>
-    <ProjectReference Include="..\FlowMapper.SourceGenerator\FlowMapper.SourceGenerator.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\FlowMapper.Analyzers\FlowMapper.Analyzers.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" />
+    <ProjectReference Include="..\FlowMapper.Core\FlowMapper.Core.csproj" />
+    <ProjectReference Include="..\FlowMapper.DependencyInjection\FlowMapper.DependencyInjection.csproj" />
+    <ProjectReference Include="..\FlowMapper.SourceGenerator\FlowMapper.SourceGenerator.csproj" />
+    <ProjectReference Include="..\FlowMapper.Analyzers\FlowMapper.Analyzers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\README.nuget.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
-  <!-- Runtime DLLs (lib/netstandard2.0) -->
-  <ItemGroup>
-    <None Include="..\FlowMapper.Abstractions\bin\$(Configuration)\netstandard2.0\FlowMapper.Abstractions.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="false" />
-    <None Include="..\FlowMapper.Core\bin\$(Configuration)\netstandard2.0\FlowMapper.Core.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="false" />
-    <None Include="..\FlowMapper.DependencyInjection\bin\$(Configuration)\netstandard2.0\FlowMapper.DependencyInjection.dll" Pack="true" PackagePath="lib\netstandard2.0" Visible="false" />
-  </ItemGroup>
-
-  <!-- Analyzer/SourceGenerator DLLs (analyzers/dotnet/cs) -->
-  <ItemGroup>
-    <None Include="..\FlowMapper.SourceGenerator\bin\$(Configuration)\netstandard2.0\FlowMapper.SourceGenerator.dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
-    <None Include="..\FlowMapper.SourceGenerator\bin\$(Configuration)\netstandard2.0\FlowMapper.Core.dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
-    <None Include="..\FlowMapper.Analyzers\bin\$(Configuration)\netstandard2.0\FlowMapper.Analyzers.dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
   </ItemGroup>
 
 </Project>
