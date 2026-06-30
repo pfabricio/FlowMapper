@@ -51,31 +51,39 @@ internal static class GeneratorTestHelper
     public static List<MetadataReference> GetMetadataReferences()
     {
         var refs = new List<MetadataReference>();
-        var assemblies = new[]
+
+        // Get all required assemblies from the runtime
+        var assemblyTypes = new (Assembly Assembly, bool Required)[]
         {
-            typeof(object).Assembly,
-            typeof(Enumerable).Assembly,
-            typeof(System.ComponentModel.EditorBrowsableAttribute).Assembly,
-            typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException).Assembly,
-            Assembly.Load("System.Runtime"),
-            typeof(FlowMapper.Abstractions.MapAttribute<,>).Assembly,
-            typeof(FlowMapper.Core.Flow).Assembly,
+            (typeof(object).Assembly, true),                    // System.Runtime
+            (typeof(Enumerable).Assembly, true),                // System.Linq
+            (typeof(System.ComponentModel.EditorBrowsableAttribute).Assembly, true),
+            (typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException).Assembly, false),
+            (typeof(FlowMapper.Abstractions.MapAttribute<,>).Assembly, true),
+            (typeof(FlowMapper.Core.Flow).Assembly, true),
         };
 
-        foreach (var asm in assemblies)
+        foreach (var (asm, required) in assemblyTypes)
         {
             if (!string.IsNullOrEmpty(asm.Location))
-            {
                 refs.Add(MetadataReference.CreateFromFile(asm.Location));
-            }
         }
 
-        refs.Add(MetadataReference.CreateFromFile(
-            Assembly.Load("netstandard").Location));
-        refs.Add(MetadataReference.CreateFromFile(
-            Assembly.Load("System.Collections").Location));
-        refs.Add(MetadataReference.CreateFromFile(
-            Assembly.Load("System.Linq").Location));
+        // Try loading additional assemblies by name (may fail on Linux but not critical)
+        var optionalNames = new[] { "System.Runtime", "netstandard", "System.Collections", "System.Linq" };
+        foreach (var name in optionalNames)
+        {
+            try
+            {
+                var asm = Assembly.Load(name);
+                if (!string.IsNullOrEmpty(asm.Location))
+                    refs.Add(MetadataReference.CreateFromFile(asm.Location));
+            }
+            catch
+            {
+                // Skip assemblies that can't be loaded (e.g. netstandard on modern .NET)
+            }
+        }
 
         return refs;
     }
