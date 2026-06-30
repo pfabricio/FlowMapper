@@ -109,6 +109,21 @@ public class MyService(IMapper<User, UserDto> mapper)
 }
 ```
 
+## Performance
+
+FlowMapper matches hand-written mapping speed — **6–10× faster than AutoMapper** with identical memory allocation.
+
+BenchmarkDotNet results on .NET 10 (mean time per operation, lower is better):
+
+| Scenario | Manual | **FlowMapper** | AutoMapper |
+|----------|-------:|---------------:|-----------:|
+| Simple flat object | 9.50 ns | **12.76 ns** | 72.11 ns |
+| Flatten (nested → flat) | 13.83 ns | **12.95 ns** | 78.03 ns |
+| Constructor (records) | 7.81 ns | **7.85 ns** | 76.35 ns |
+| Collection with computed props | 44.02 ns | **43.48 ns** | 722.72 ns |
+
+Run the benchmark yourself: `dotnet run -c Release --project samples/Benchmark`
+
 ## Diagnostics at compile time
 
 Mapping issues are reported as build warnings and errors — no more runtime surprises.

@@ -13,12 +13,12 @@ FlowMapper generates pure C# mapping code at compile time, eliminating runtime r
 | ⚡ **Compile-Time Generation** | All mapping code is generated as `.g.cs` files during build |
 | 🌳 **Nested Mapping** | Automatic deep mapping of complex object graphs |
 | 🧱 **Constructor Mapping** | Records, immutable types, `init`-only properties |
-| 🌿 **Flatten Mapping** | Map nested paths to flat properties (`Address.City.Name → CityName`) |
-| 🧩 **Profile System** | Context-aware rules (Api, Domain, Integration) |
-| ⚙️ **Fluent Configuration** | Global options via `AddFlowMapper(cfg => ...)` |
+| 🌿 **Flatten Mapping** | Map nested paths to flat properties (`Address.Street → AddressStreet`) |
+| 🧩 **Profile System** | `MappingProfile` with `CreateMap<T1, T2>()` — the primary API |
+| ⚙️ **Fluent API** | `ForMember`, `Ignore`, `UseConstructor`, `DisableFlatten`, `AfterMap`, `ConstructUsing` |
 | 🚨 **Compile-Time Diagnostics** | Errors and warnings at build time (FM0001–FM0013) |
 | 🔍 **IDE Support** | Real-time squiggles via Roslyn Analyzer |
-| 📦 **Dependency Injection** | Built-in DI registration |
+| 📦 **Dependency Injection** | Built-in DI registration via `AddFlowMapper()` |
 | 📊 **Benchmark Suite** | Compare against AutoMapper with BenchmarkDotNet |
 
 ---
@@ -31,13 +31,21 @@ FlowMapper generates pure C# mapping code at compile time, eliminating runtime r
 dotnet add package FlowMapper
 ```
 
-### 2. Define a mapper
+### 2. Define a profile
 
 ```csharp
 using FlowMapper;
 
-[Map<User, UserDto>]
-public partial class UserMapper;
+public class MyProfile : MappingProfile
+{
+    public MyProfile()
+    {
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
+            .Ignore(dest => dest.InternalId)
+            .AfterMap((source, target) => target.CreatedAt = DateTime.UtcNow);
+    }
+}
 ```
 
 ### 3. Use it
@@ -50,12 +58,7 @@ UserDto dto = mapper.Map(user);
 Or with DI:
 
 ```csharp
-builder.Services.AddFlowMapper(cfg =>
-{
-    cfg.UseDefaultProfile("Api")
-       .EnableFlatten()
-       .PreferConstructor();
-});
+builder.Services.AddFlowMapper();
 
 public class UserService(IMapper<User, UserDto> mapper)
 {
@@ -65,9 +68,34 @@ public class UserService(IMapper<User, UserDto> mapper)
 
 ---
 
+## Fluent API
+
+Every method returns `MappingExpression<TSource, TDestination>` for chaining.
+
+| Method | Description |
+|--------|-------------|
+| `ForMember(dest, opt)` | Customize how a destination property is mapped |
+| `Ignore(dest)` | Skip a destination property |
+| `UseConstructor()` | Prefer constructor matching (records, immutable types) |
+| `DisableFlatten()` | Disable automatic flattening for this mapping |
+| `AfterMap(expression)` | Execute logic after mapping (lambda) |
+| `ConstructUsing(expression)` | Custom construction logic (lambda) |
+
+```csharp
+CreateMap<Order, OrderDto>()
+    .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Items.Sum(i => i.Price)))
+    .ForMember(dest => dest.ShippingAddress, opt => opt.Ignore())
+    .UseConstructor()
+    .DisableFlatten()
+    .AfterMap((source, target) => target.ProcessedAt = DateTime.UtcNow)
+    .ConstructUsing(source => new OrderDto { Id = source.Id });
+```
+
+---
+
 ## Profiles
 
-FlowMapper supports different mapping behaviors per context:
+FlowMapper supports different mapping behaviors per context via `MappingProfile`:
 
 | Profile | Flatten | Constructor | Strict |
 |---|---|---|---|
@@ -76,8 +104,13 @@ FlowMapper supports different mapping behaviors per context:
 | `Integration` | ✔ | ❌ | ✔ |
 
 ```csharp
-[Map<User, UserDto, Profile = "Domain")]
-public partial class UserMapper;
+public class ApiProfile : MappingProfile
+{
+    public ApiProfile()
+    {
+        CreateMap<User, UserDto>();
+    }
+}
 ```
 
 ---
@@ -94,6 +127,23 @@ src/
 ├── FlowMapper                    # Meta-package (entry point)
 └── FlowMapper.Cli                # CLI tool (dotnet flowmapper)
 ```
+
+---
+
+## Performance
+
+FlowMapper matches hand-written mapping speed — **6–10× faster than AutoMapper** with identical memory allocation.
+
+BenchmarkDotNet results on .NET 10 (mean time per operation, lower is better):
+
+| Scenario | Manual | **FlowMapper** | AutoMapper |
+|----------|-------:|---------------:|-----------:|
+| Simple flat object | 9.50 ns | **12.76 ns** | 72.11 ns |
+| Flatten (nested → flat) | 13.83 ns | **12.95 ns** | 78.03 ns |
+| Constructor (records) | 7.81 ns | **7.85 ns** | 76.35 ns |
+| Collection with computed props | 44.02 ns | **43.48 ns** | 722.72 ns |
+
+Run the benchmark yourself: `dotnet run -c Release --project samples/Benchmark`
 
 ---
 

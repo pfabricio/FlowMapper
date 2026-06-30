@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>MapperBenchmarks-20260629-220455</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, Windows 11 (10.0.26100.8655)
+Unknown processor
+.NET SDK 10.0.203
+  [Host]     : .NET 10.0.7 (10.0.726.21808), X64 RyuJIT AVX2
+  DefaultJob : .NET 10.0.7 (10.0.726.21808), X64 RyuJIT AVX2
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method          </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Manual_SimpleFlat</td><td>9.497 ns</td><td>0.2460 ns</td><td>0.2416 ns</td><td>0.0096</td><td>40 B</td>
+</tr><tr><td>FlowMapper_SimpleFlat</td><td>12.760 ns</td><td>0.2375 ns</td><td>0.2221 ns</td><td>0.0096</td><td>40 B</td>
+</tr><tr><td>AutoMapper_SimpleFlat</td><td>72.107 ns</td><td>0.5495 ns</td><td>0.4588 ns</td><td>0.0095</td><td>40 B</td>
+</tr><tr><td>Manual_Flatten</td><td>13.833 ns</td><td>0.3106 ns</td><td>0.2754 ns</td><td>0.0115</td><td>48 B</td>
+</tr><tr><td>FlowMapper_Flatten</td><td>12.949 ns</td><td>0.3184 ns</td><td>0.2823 ns</td><td>0.0115</td><td>48 B</td>
+</tr><tr><td>AutoMapper_Flatten</td><td>78.031 ns</td><td>1.3023 ns</td><td>1.2182 ns</td><td>0.0114</td><td>48 B</td>
+</tr><tr><td>Manual_Constructor</td><td>7.810 ns</td><td>0.1643 ns</td><td>0.1537 ns</td><td>0.0115</td><td>48 B</td>
+</tr><tr><td>FlowMapper_Constructor</td><td>7.848 ns</td><td>0.1672 ns</td><td>0.1564 ns</td><td>0.0115</td><td>48 B</td>
+</tr><tr><td>AutoMapper_Constructor</td><td>76.352 ns</td><td>1.5952 ns</td><td>3.3298 ns</td><td>0.0114</td><td>48 B</td>
+</tr><tr><td>Manual_Collection</td><td>44.024 ns</td><td>0.3388 ns</td><td>0.3004 ns</td><td>0.0191</td><td>80 B</td>
+</tr><tr><td>FlowMapper_Collection</td><td>43.477 ns</td><td>0.3829 ns</td><td>0.3198 ns</td><td>0.0191</td><td>80 B</td>
+</tr><tr><td>AutoMapper_Collection</td><td>722.719 ns</td><td>6.1030 ns</td><td>5.0963 ns</td><td>0.0248</td><td>104 B</td>
+</tr></tbody></table>
+</body>
+</html>
