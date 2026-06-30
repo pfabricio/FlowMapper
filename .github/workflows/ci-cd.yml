@@ -54,7 +54,7 @@ jobs:
 
       - run: dotnet build ${{ env.SLNX }} --no-restore -c Release
 
-      - run: dotnet pack src/FlowMapper/FlowMapper.csproj --no-restore -c Release -o nupkgs -p:Version=${{ steps.version.outputs.VERSION }}
+      - run: dotnet pack src/FlowMapper/FlowMapper.csproj -c Release -o nupkgs -p:Version=${{ steps.version.outputs.VERSION }}
 
       - name: Push to NuGet.org
         run: |
