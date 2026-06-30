@@ -1,4 +1,3 @@
-global using AutoMapper;
 global using BenchmarkDotNet.Attributes;
 global using BenchmarkDotNet.Running;
 global using FlowMapper.Abstractions;
@@ -116,34 +115,11 @@ public class FlowMapperBenchmark
     public static readonly ManualOrderMapper OrderMapper = new();
 }
 
-// --- AutoMapper Profile ---
-
-public class MappingProfile : Profile
-{
-    public MappingProfile()
-    {
-        CreateMap<User, UserDto>();
-
-        CreateMap<Employee, EmployeeDto>()
-            .ForMember(d => d.AddressStreet, o => o.MapFrom(s => s.Address.Street))
-            .ForMember(d => d.AddressCity, o => o.MapFrom(s => s.Address.City))
-            .ForMember(d => d.AddressZipCode, o => o.MapFrom(s => s.Address.ZipCode));
-
-        CreateMap<Product, ProductDto>();
-
-        CreateMap<Order, OrderDto>()
-            .ForMember(d => d.ItemCount, o => o.MapFrom(s => s.Items.Count))
-            .ForMember(d => d.Total, o => o.MapFrom(s => s.Items.Sum(i => i.Price * i.Quantity)));
-    }
-}
-
 // --- Benchmark ---
 
 [MemoryDiagnoser]
 public class MapperBenchmarks
 {
-    private IMapper _autoMapper = null!;
-
     private User _user = null!;
     private Employee _employee = null!;
     private Product _product = null!;
@@ -152,9 +128,6 @@ public class MapperBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
-        _autoMapper = config.CreateMapper();
-
         _user = new User { Id = 1, Name = "Alice", Email = "alice@example.com", Age = 30 };
         _employee = new Employee { Name = "Bob", Address = new Address { Street = "123 Main St", City = "Springfield", ZipCode = "12345" } };
         _product = new Product(1, "Widget", 9.99m);
@@ -179,12 +152,6 @@ public class MapperBenchmarks
         return FlowMapperBenchmark.UserMapper.Map(_user);
     }
 
-    [Benchmark]
-    public UserDto AutoMapper_SimpleFlat()
-    {
-        return _autoMapper.Map<UserDto>(_user);
-    }
-
     // --- Flatten ---
 
     [Benchmark]
@@ -205,12 +172,6 @@ public class MapperBenchmarks
         return FlowMapperBenchmark.EmployeeMapper.Map(_employee);
     }
 
-    [Benchmark]
-    public EmployeeDto AutoMapper_Flatten()
-    {
-        return _autoMapper.Map<EmployeeDto>(_employee);
-    }
-
     // --- Constructor (records) ---
 
     [Benchmark]
@@ -223,12 +184,6 @@ public class MapperBenchmarks
     public ProductDto FlowMapper_Constructor()
     {
         return FlowMapperBenchmark.ProductMapper.Map(_product);
-    }
-
-    [Benchmark]
-    public ProductDto AutoMapper_Constructor()
-    {
-        return _autoMapper.Map<ProductDto>(_product);
     }
 
     // --- Collection with computed properties ---
@@ -248,11 +203,5 @@ public class MapperBenchmarks
     public OrderDto FlowMapper_Collection()
     {
         return FlowMapperBenchmark.OrderMapper.Map(_order);
-    }
-
-    [Benchmark]
-    public OrderDto AutoMapper_Collection()
-    {
-        return _autoMapper.Map<OrderDto>(_order);
     }
 }

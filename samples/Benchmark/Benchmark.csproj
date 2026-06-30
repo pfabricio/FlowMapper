@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" />
-    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
   </ItemGroup>
 
