@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FlowMapper.Compiler</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FlowMapper.Core\FlowMapper.Core.csproj" />
+    <ProjectReference Include="..\FlowMapper.Execution\FlowMapper.Execution.csproj" />
+    <ProjectReference Include="..\FlowMapper.Validation\FlowMapper.Validation.csproj" />
+    <ProjectReference Include="..\FlowMapper.PluginSdk\FlowMapper.PluginSdk.csproj" />
+  </ItemGroup>
+</Project>

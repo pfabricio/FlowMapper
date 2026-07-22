@@ -1,104 +1,120 @@
-#pragma warning disable CS1591
-
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace FlowMapper.Core;
 
 public class MappingExpression<TSource, TDestination>
 {
-    internal List<ExplicitMapping> ExplicitMappings { get; } = new();
-    internal List<string> IgnoredProperties { get; } = new();
-    internal bool PreferConstructor { get; private set; }
-    internal bool EnableFlatten { get; private set; } = true;
-    internal string? AfterMapMethod { get; set; }
-    internal string? ConstructUsingMethod { get; set; }
+    public string ProfileName { get; }
+    public MappingPolicy Policy { get; }
+    public List<ExplicitMapping> ExplicitMappings { get; } = new();
+    public bool ReverseMapped { get; private set; }
+    public bool UseConstructor { get; private set; }
+    public bool DisableFlatten { get; private set; }
+
+    public MappingExpression(string profileName, MappingPolicy policy)
+    {
+        ProfileName = profileName;
+        Policy = policy;
+    }
 
     public MappingExpression<TSource, TDestination> ForMember(
-        Expression<Func<TDestination, object?>> destMember,
-        Action<MemberOptions> options)
+        Expression<Func<TDestination, object?>> destinationMember,
+        Action<MemberOptions<TSource>> options)
     {
-        if (destMember.Body is MemberExpression memberExpr)
+        var memberName = GetMemberName(destinationMember);
+        var opts = new MemberOptions<TSource>();
+        options(opts);
+
+        ExplicitMappings.Add(new ExplicitMapping
         {
-            var destName = memberExpr.Member.Name;
-            var opts = new MemberOptions();
-            options(opts);
-            ExplicitMappings.Add(new ExplicitMapping
-            {
-                DestinationProperty = destName,
-                SourceProperty = opts.SourceProperty ?? destName,
-                IsIgnored = opts.IsIgnored,
-                MapFromExpression = opts.SourceExpression
-            });
-        }
+            DestinationProperty = memberName,
+            SourceProperty = opts.SourceProperty ?? memberName,
+            IsIgnored = opts.IsIgnored,
+            MapFromExpression = opts.SourceExpression
+        });
+
         return this;
     }
 
-    public MappingExpression<TSource, TDestination> Ignore(Expression<Func<TDestination, object?>> destMember)
+    public MappingExpression<TSource, TDestination> ForPath(
+        Expression<Func<TDestination, object?>> destinationPath,
+        Action<PathMemberOptions<TSource>> options)
     {
-        if (destMember.Body is MemberExpression memberExpr)
+        var pathSegments = ExtractPathSegments(destinationPath);
+        var opts = new PathMemberOptions<TSource>();
+        options(opts);
+
+        ExplicitMappings.Add(new ExplicitMapping
         {
-            IgnoredProperties.Add(memberExpr.Member.Name);
+            DestinationProperty = string.Join(".", pathSegments),
+            SourceProperty = opts.SourceProperty ?? pathSegments.Last(),
+            IsPathMapping = true,
+            PathSegments = pathSegments,
+            MapFromExpression = opts.SourceExpression
+        });
+
+        return this;
+    }
+
+    public MappingExpression<TSource, TDestination> ReverseMap()
+    {
+        ReverseMapped = true;
+        return this;
+    }
+
+    public MappingExpression<TSource, TDestination> ConstructUsing(Expression<Func<TSource, TDestination>> constructor)
+    {
+        UseConstructor = true;
+        return this;
+    }
+
+    public MappingExpression<TSource, TDestination> DisableFlattenMapping()
+    {
+        DisableFlatten = true;
+        return this;
+    }
+
+    private static string GetMemberName(LambdaExpression expression)
+    {
+        return expression.Body switch
+        {
+            MemberExpression m => m.Member.Name,
+            UnaryExpression { Operand: MemberExpression m } => m.Member.Name,
+            _ => throw new ArgumentException("Invalid member expression")
+        };
+    }
+
+    private static List<string> ExtractPathSegments(LambdaExpression expression)
+    {
+        var body = expression.Body is UnaryExpression u ? u.Operand : expression.Body;
+        var segments = new List<string>();
+        var current = body;
+        while (current is MemberExpression m)
+        {
+            segments.Add(m.Member.Name);
+            current = m.Expression;
         }
-        return this;
-    }
-
-    public MappingExpression<TSource, TDestination> UseConstructor()
-    {
-        PreferConstructor = true;
-        return this;
-    }
-
-    public MappingExpression<TSource, TDestination> DisableFlatten()
-    {
-        EnableFlatten = false;
-        return this;
-    }
-
-    [Obsolete("Use AfterMap(Expression<Action<TSource, TDestination>> expression) instead")]
-    public MappingExpression<TSource, TDestination> AfterMap(string methodName)
-    {
-        AfterMapMethod = methodName;
-        return this;
-    }
-
-    public MappingExpression<TSource, TDestination> AfterMap(
-        Expression<Action<TSource, TDestination>> expression)
-    {
-        AfterMapMethod = expression.Body.ToString();
-        return this;
-    }
-
-    [Obsolete("Use ConstructUsing(Expression<Func<TSource, TDestination>> expression) instead")]
-    public MappingExpression<TSource, TDestination> ConstructUsing(string methodName)
-    {
-        ConstructUsingMethod = methodName;
-        return this;
-    }
-
-    public MappingExpression<TSource, TDestination> ConstructUsing(
-        Expression<Func<TSource, TDestination>> expression)
-    {
-        ConstructUsingMethod = expression.Body.ToString();
-        return this;
+        segments.Reverse();
+        return segments;
     }
 }
 
-public class MemberOptions
+public class MemberOptions<TSource>
 {
     public string? SourceProperty { get; set; }
-    public bool IsIgnored { get; set; }
     public string? SourceExpression { get; set; }
+    public bool IsIgnored { get; set; }
 
     public void MapFrom(string sourceProperty)
     {
         SourceProperty = sourceProperty;
     }
 
-    public void MapFrom(LambdaExpression expression)
+    public void MapFrom(Expression<Func<TSource, object?>> expression)
     {
         SourceExpression = expression.Body.ToString();
+        if (expression.Body is MemberExpression m)
+            SourceProperty = m.Member.Name;
     }
 
     public void Ignore()
@@ -107,10 +123,20 @@ public class MemberOptions
     }
 }
 
-public class ExplicitMapping
+public class PathMemberOptions<TSource>
 {
-    public string SourceProperty { get; set; } = string.Empty;
-    public string DestinationProperty { get; set; } = string.Empty;
-    public bool IsIgnored { get; set; }
-    public string? MapFromExpression { get; set; }
+    public string? SourceProperty { get; set; }
+    public string? SourceExpression { get; set; }
+
+    public void MapFrom(string sourceProperty)
+    {
+        SourceProperty = sourceProperty;
+    }
+
+    public void MapFrom(Expression<Func<TSource, object?>> expression)
+    {
+        SourceExpression = expression.Body.ToString();
+        if (expression.Body is MemberExpression m)
+            SourceProperty = m.Member.Name;
+    }
 }

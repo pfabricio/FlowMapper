@@ -1,21 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FlowMapper.DependencyInjection</RootNamespace>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" />
+    <ProjectReference Include="..\FlowMapper.Core\FlowMapper.Core.csproj" />
+    <ProjectReference Include="..\FlowMapper.Runtime\FlowMapper.Runtime.csproj" />
+    <ProjectReference Include="..\FlowMapper.Compiler\FlowMapper.Compiler.csproj" />
+    <ProjectReference Include="..\FlowMapper.Materializer\FlowMapper.Materializer.csproj" />
+    <ProjectReference Include="..\FlowMapper.Diagnostics\FlowMapper.Diagnostics.csproj" />
+    <ProjectReference Include="..\FlowMapper.Providers.Abstractions\FlowMapper.Providers.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IsPackable>true</IsPackable>
-
-    <!-- Informações de pacote -->
-    <PackageId>FlowMapper.DependencyInjection</PackageId>
-    <Description>FlowMapper Dependency Injection integration with Microsoft.Extensions.DependencyInjection</Description>
-  </PropertyGroup>
-
 </Project>

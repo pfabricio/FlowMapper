@@ -1,8 +1,4 @@
-﻿namespace FlowMapper;
+namespace FlowMapper;
 
-/// <summary>
-/// Marker type for the FlowMapper package.
-/// </summary>
-public sealed class FlowMapperMarker
-{
-}
+/// <summary>Assembly marker for the FlowMapper meta-package.</summary>
+internal static class FlowMapperMarker { }

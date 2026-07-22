@@ -1,25 +1,27 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <IsPackable>true</IsPackable>
-
-    <!-- Informações de pacote -->
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FlowMapper</RootNamespace>
     <PackageId>FlowMapper</PackageId>
-    <Description>Compile-time object mapping framework powered by Roslyn source generators. Zero runtime reflection.</Description>
-    <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
+    <Title>FlowMapper V2</Title>
+    <Description>All-in-one meta-package: compile-time object mapper, micro-ORM, source generator, DI integration, and database providers (SQL Server, PostgreSQL, MySQL, Oracle)</Description>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" />
+    <ProjectReference Include="..\FlowMapper.Primitives\FlowMapper.Primitives.csproj" />
     <ProjectReference Include="..\FlowMapper.Core\FlowMapper.Core.csproj" />
+    <ProjectReference Include="..\FlowMapper.Execution\FlowMapper.Execution.csproj" />
+    <ProjectReference Include="..\FlowMapper.Materializer\FlowMapper.Materializer.csproj" />
+    <ProjectReference Include="..\FlowMapper.Providers.Abstractions\FlowMapper.Providers.Abstractions.csproj" />
+    <ProjectReference Include="..\FlowMapper.Providers.SqlServer\FlowMapper.Providers.SqlServer.csproj" />
+    <ProjectReference Include="..\FlowMapper.Providers.PostgreSql\FlowMapper.Providers.PostgreSql.csproj" />
+    <ProjectReference Include="..\FlowMapper.Providers.MySql\FlowMapper.Providers.MySql.csproj" />
+    <ProjectReference Include="..\FlowMapper.Providers.Oracle\FlowMapper.Providers.Oracle.csproj" />
+    <ProjectReference Include="..\FlowMapper.Compiler\FlowMapper.Compiler.csproj" />
+    <ProjectReference Include="..\FlowMapper.Runtime\FlowMapper.Runtime.csproj" />
+    <ProjectReference Include="..\FlowMapper.Diagnostics\FlowMapper.Diagnostics.csproj" />
     <ProjectReference Include="..\FlowMapper.DependencyInjection\FlowMapper.DependencyInjection.csproj" />
-    <ProjectReference Include="..\FlowMapper.SourceGenerator\FlowMapper.SourceGenerator.csproj" />
-    <ProjectReference Include="..\FlowMapper.Analyzers\FlowMapper.Analyzers.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\README.nuget.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
 </Project>

@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <FlowMapperBuildIntegrationEnabled Condition="'$(FlowMapperBuildIntegrationEnabled)' == ''">true</FlowMapperBuildIntegrationEnabled>
+    <FlowMapperGenerateSources Condition="'$(FlowMapperGenerateSources)' == ''">true</FlowMapperGenerateSources>
+    <FlowMapperOptimizationEnabled Condition="'$(FlowMapperOptimizationEnabled)' == ''">true</FlowMapperOptimizationEnabled>
+    <FlowMapperCacheEnabled Condition="'$(FlowMapperCacheEnabled)' == ''">true</FlowMapperCacheEnabled>
+    <FlowMapperOutputPath Condition="'$(FlowMapperOutputPath)' == ''">$(IntermediateOutputPath)FlowMapper</FlowMapperOutputPath>
+  </PropertyGroup>
+</Project>

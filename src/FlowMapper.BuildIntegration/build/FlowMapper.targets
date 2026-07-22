@@ -1,0 +1,21 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)FlowMapper.props" />
+
+  <PropertyGroup>
+    <FlowMapperAssemblyPath>$(MSBuildThisFileDirectory)..\lib\net8.0\FlowMapper.BuildIntegration.dll</FlowMapperAssemblyPath>
+  </PropertyGroup>
+
+  <UsingTask
+    TaskName="FlowMapper.BuildIntegration.Tasks.FlowMapperCompilerTask"
+    AssemblyFile="$(FlowMapperAssemblyPath)" />
+
+  <Target Name="FlowMapperBeforeCompile" BeforeTargets="CoreCompile"
+          Condition="'$(FlowMapperBuildIntegrationEnabled)' == 'true'">
+    <FlowMapperCompilerTask
+      ProjectName="$(MSBuildProjectName)"
+      OutputPath="$(FlowMapperOutputPath)"
+      EnableOptimizations="$(FlowMapperOptimizationEnabled)"
+      EnableSourceGeneration="$(FlowMapperGenerateSources)"
+      EnableCaching="$(FlowMapperCacheEnabled)" />
+  </Target>
+</Project>

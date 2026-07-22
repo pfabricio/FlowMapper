@@ -1,59 +1,76 @@
-using System;
-using System.Linq;
-using System.Reflection;
 using FlowMapper.Abstractions;
+using FlowMapper.Compiler;
+using FlowMapper.Core;
+using FlowMapper.Diagnostics;
+using FlowMapper.Materializer;
+using FlowMapper.Providers.Abstractions;
+using FlowMapper.Runtime;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FlowMapper.DependencyInjection;
 
-/// <summary>Extension methods for registering FlowMapper services in the DI container.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Adds FlowMapper services to the DI container. Registers <c>IFlowMapper</c> and scans
-    /// loaded assemblies for <c>IMapper&lt;,&gt;</c> implementations (generated at compile time).</summary>
-    /// <param name="services">The <c>IServiceCollection</c> to add services to.</param>
-    /// <param name="configureOptions">Optional callback to configure <c>FlowMapperOptions</c>.</param>
     public static IServiceCollection AddFlowMapper(
         this IServiceCollection services,
-        Action<FlowMapperOptions>? configureOptions = null)
+        Action<FlowMapperBuilder>? configure = null)
     {
-        if (configureOptions != null)
-        {
-            var options = new FlowMapperOptions();
-            configureOptions(options);
-            services.AddSingleton(options);
-        }
-        else
-        {
-            services.AddSingleton(new FlowMapperOptions());
-        }
+        var builder = new FlowMapperBuilder(services);
+        configure?.Invoke(builder);
+        var options = builder.GetOptions();
 
-        services.AddScoped<IFlowMapper, FlowMapperService>();
+        services.AddSingleton(options);
+        services.AddSingleton(options.Data);
+        services.AddSingleton(options.Mapping);
 
-        var mapperTypes = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(a =>
-            {
-                try
-                {
-                    return a.GetTypes();
-                }
-                catch (ReflectionTypeLoadException)
-                {
-                    return Type.EmptyTypes;
-                }
-            })
-            .Where(t => t is { IsClass: true, IsAbstract: false })
-            .SelectMany(t => t.GetInterfaces()
-                .Where(i => i.IsGenericType
-                    && i.GetGenericTypeDefinition() == typeof(IMapper<,>))
-                .Select(i => new { MapperType = t, ServiceType = i }))
-            .ToList();
-
-        foreach (var item in mapperTypes)
-        {
-            services.AddTransient(item.ServiceType, item.MapperType);
-        }
+        RegisterDataAccess(services, options.Data);
+        RegisterObjectMapping(services);
+        RegisterCore(services);
 
         return services;
+    }
+
+    private static void RegisterDataAccess(IServiceCollection services, DataOptions options)
+    {
+        services.TryAddSingleton<IMaterializer>(sp =>
+        {
+            var pipeline = new Materializer.Pipeline.MaterializationPipeline(
+                separator: options.CascadeSeparator);
+            return new Materializer.Materializer(pipeline, options.CascadeSeparator);
+        });
+
+        services.TryAddSingleton<IConnectionFactory>(sp =>
+        {
+            var provider = sp.GetRequiredService<IDatabaseProvider>();
+            return new ConnectionFactory(() => provider.CreateConnection());
+        });
+
+        services.AddSingleton<IExecutionScopeFactory, ExecutionScopeFactory>();
+
+        services.TryAddSingleton<IPipelineExecutor>(sp =>
+        {
+            var pipelineBehaviors = sp.GetServices<IPipelineBehavior>();
+            var connectionFactory = sp.GetRequiredService<IConnectionFactory>();
+            var materializer = sp.GetRequiredService<IMaterializer>();
+            var scopeFactory = sp.GetRequiredService<IExecutionScopeFactory>();
+            return new PipelineExecutor(pipelineBehaviors, connectionFactory, materializer, scopeFactory);
+        });
+
+        services.TryAddSingleton<IQueryExecutor, QueryExecutor>();
+        services.TryAddSingleton<ICommandExecutor, CommandExecutor>();
+        services.TryAddSingleton<IStreamExecutor, StreamExecutor>();
+        services.TryAddSingleton<IRapidMapper, RapidMapperService>();
+    }
+
+    private static void RegisterObjectMapping(IServiceCollection services)
+    {
+        services.TryAddSingleton<IFlowMapper, FlowMapperService>();
+    }
+
+    private static void RegisterCore(IServiceCollection services)
+    {
+        services.TryAddSingleton<FlowBuilder>();
+        services.TryAddSingleton<Compiler.ICompiler, Compiler.Compiler>();
     }
 }
