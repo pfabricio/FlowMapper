@@ -10,7 +10,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>mapper;orm;micro-orm;source-generator;roslyn;data-access;object-mapper</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
