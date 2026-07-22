@@ -22,6 +22,7 @@
     <ProjectReference Include="..\FlowMapper.Compiler\FlowMapper.Compiler.csproj" />
     <ProjectReference Include="..\FlowMapper.Runtime\FlowMapper.Runtime.csproj" />
     <ProjectReference Include="..\FlowMapper.Diagnostics\FlowMapper.Diagnostics.csproj" />
+    <ProjectReference Include="..\FlowMapper.Deserialization\FlowMapper.Deserialization.csproj" />
     <ProjectReference Include="..\FlowMapper.DependencyInjection\FlowMapper.DependencyInjection.csproj" />
   </ItemGroup>
 </Project>

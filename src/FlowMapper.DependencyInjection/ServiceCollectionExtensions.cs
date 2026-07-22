@@ -1,6 +1,7 @@
 using FlowMapper.Abstractions;
 using FlowMapper.Compiler;
 using FlowMapper.Core;
+using FlowMapper.Deserialization;
 using FlowMapper.Diagnostics;
 using FlowMapper.Materializer;
 using FlowMapper.Providers.Abstractions;
@@ -61,6 +62,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<ICommandExecutor, CommandExecutor>();
         services.TryAddSingleton<IStreamExecutor, StreamExecutor>();
         services.TryAddSingleton<IRapidMapper, RapidMapperService>();
+        services.TryAddSingleton<IDeserializer, DeserializationPipeline>();
     }
 
     private static void RegisterObjectMapping(IServiceCollection services)
