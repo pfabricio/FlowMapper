@@ -1,5 +1,7 @@
 # FlowMapper V2
 
+[![NuGet](https://img.shields.io/nuget/v/FlowMapper.svg?style=flat-square)](https://www.nuget.org/packages/FlowMapper)
+
 **FlowMapper is a compile-time data mapping platform for .NET.**
 
 It combines object-object mapping, micro-ORM, deserialization, source generation, and execution pipelines under a unified architecture focused on **performance**, **extensibility**, and **zero runtime reflection**.
