@@ -2,6 +2,13 @@
 
 All-in-one: compile-time object mapper (AutoMapper-like), micro-ORM, JSON/XML/TXT deserializer, and database providers — unified under a single `IFlowMapper` interface.
 
+## Documentation
+
+| Language | Link |
+|----------|------|
+| 🇧🇷 Português | [`Docs/README.md`](Docs/README.md) |
+| 🇺🇸 English | [`Docs/README.en.md`](Docs/README.en.md) |
+
 ## Quick Start
 
 ```csharp
