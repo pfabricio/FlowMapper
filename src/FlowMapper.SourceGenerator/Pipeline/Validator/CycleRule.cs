@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Validator;
@@ -9,9 +6,8 @@ public class CycleRule : IValidationRule
 {
     public string RuleId => "Cycle";
 
-    public IEnumerable<FlowDiagnosticResult> Validate(MapperDefinition candidate, Flow flow)
+    public IEnumerable<FlowDiagnosticResult> Validate(MapperDefinition candidate, FlowDescriptor flow)
     {
-        // FM0006 — Detect cycles in nested flows
         var visited = new HashSet<string>();
         var path = new List<string>();
         var results = new List<FlowDiagnosticResult>();
@@ -25,7 +21,7 @@ public class CycleRule : IValidationRule
     }
 
     private static void DetectCycle(
-        Flow flow,
+        FlowDescriptor flow,
         HashSet<string> visited,
         List<string> path,
         List<FlowDiagnosticResult> results)

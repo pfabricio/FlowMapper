@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Text;
-using FlowMapper.Core;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Generator;
 
@@ -11,7 +10,8 @@ public class PropertyWriter : ICodeWriter
         var flow = context.Flow;
 
         var assignProps = flow.Properties
-            .Where(p => p.Strategy is MappingStrategy.Direct or MappingStrategy.Flatten)
+            .Where(p => p.Strategy is Models.MappingStrategy.Auto or Models.MappingStrategy.Flatten
+                        && p.ConstructorParameterIndex < 0)
             .ToList();
 
         var hasAssignments = assignProps.Count > 0 || flow.NestedFlows.Count > 0;
@@ -27,7 +27,7 @@ public class PropertyWriter : ICodeWriter
             }
             else
             {
-                var sourceAccess = prop.Strategy == MappingStrategy.Flatten
+                var sourceAccess = prop.Strategy == Models.MappingStrategy.Flatten
                     ? $"source.{prop.SourcePath}"
                     : $"source.{prop.SourceProperty}";
                 sb.AppendLine($"        target.{prop.DestinationProperty} = {sourceAccess};");

@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Validator;
@@ -10,7 +7,7 @@ public class PropertyMatchRule : IValidationRule
 {
     public string RuleId => "PropertyMatch";
 
-    public IEnumerable<FlowDiagnosticResult> Validate(MapperDefinition candidate, Flow flow)
+    public IEnumerable<FlowDiagnosticResult> Validate(MapperDefinition candidate, FlowDescriptor flow)
     {
         var diagnostics = new List<FlowDiagnosticResult>();
 
@@ -31,7 +28,6 @@ public class PropertyMatchRule : IValidationRule
         var mappedSources = new HashSet<string>(
             flow.Properties.Select(p => p.SourceProperty));
 
-        // FM0004 — Source property without matching destination
         foreach (var sp in sourceProps)
         {
             if (!mappedSources.Contains(sp.Name))
@@ -42,8 +38,6 @@ public class PropertyMatchRule : IValidationRule
             }
         }
 
-        // FM0001 — Destination property without matching source
-        // FM0002 — Same name but type mismatch
         foreach (var dp in destProps)
         {
             if (mappedDestinations.Contains(dp.Name))

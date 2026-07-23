@@ -1,18 +1,18 @@
 using System.Collections.Concurrent;
-using FlowMapper.Core;
+using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Performance;
 
 public class FlowCache
 {
-    private readonly ConcurrentDictionary<string, Flow> _cache = new();
+    private readonly ConcurrentDictionary<string, FlowDescriptor> _cache = new();
 
-    public bool TryGet(string key, out Flow? flow)
+    public bool TryGet(string key, out FlowDescriptor? flow)
     {
         return _cache.TryGetValue(key, out flow);
     }
 
-    public void Set(string key, Flow flow)
+    public void Set(string key, FlowDescriptor flow)
     {
         _cache[key] = flow;
     }

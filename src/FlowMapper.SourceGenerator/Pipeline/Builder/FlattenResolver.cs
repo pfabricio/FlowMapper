@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using FlowMapper.Core;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Builder;
 
@@ -13,7 +12,7 @@ internal sealed class LeafPath
 
 public static class FlattenResolver
 {
-    public static FlattenPath? ResolvePath(
+    public static (string FullPath, List<string> Segments)? ResolvePath(
         ITypeSymbol sourceType,
         string targetPropertyName,
         ITypeSymbol targetType)
@@ -34,12 +33,7 @@ public static class FlattenResolver
         if (matches.Count == 1)
         {
             var match = matches[0];
-            return new FlattenPath
-            {
-                FullPath = match.FullPath,
-                Segments = match.Segments,
-                TargetProperty = match.TargetProperty
-            };
+            return (match.FullPath, match.Segments);
         }
 
         return null;

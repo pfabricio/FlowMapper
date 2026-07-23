@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-using FlowMapper.Core;
+using Microsoft.CodeAnalysis;
 using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Validator;
@@ -9,9 +7,8 @@ public class ConstructorRule : IValidationRule
 {
     public string RuleId => "Constructor";
 
-    public IEnumerable<FlowDiagnosticResult> Validate(MapperDefinition candidate, Flow flow)
+    public IEnumerable<FlowDiagnosticResult> Validate(MapperDefinition candidate, FlowDescriptor flow)
     {
-        // Skip validation when ConstructUsing is explicitly provided
         if (flow.ConstructUsingMethod != null)
             yield break;
 
@@ -22,10 +19,10 @@ public class ConstructorRule : IValidationRule
         {
             var hasParamlessCtor = destType
                 .GetMembers()
-                .OfType<Microsoft.CodeAnalysis.IMethodSymbol>()
-                .Any(c => c.MethodKind == Microsoft.CodeAnalysis.MethodKind.Constructor
+                .OfType<IMethodSymbol>()
+                .Any(c => c.MethodKind == MethodKind.Constructor
                           && c.Parameters.Length == 0
-                          && c.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public);
+                          && c.DeclaredAccessibility == Accessibility.Public);
 
             if (!hasParamlessCtor)
             {
@@ -37,12 +34,11 @@ public class ConstructorRule : IValidationRule
             yield break;
         }
 
-        // FM0008 — Missing constructor binding
         var destCtors = destType
             .GetMembers()
-            .OfType<Microsoft.CodeAnalysis.IMethodSymbol>()
-            .Where(c => c.MethodKind == Microsoft.CodeAnalysis.MethodKind.Constructor
-                        && c.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public)
+            .OfType<IMethodSymbol>()
+            .Where(c => c.MethodKind == MethodKind.Constructor
+                        && c.DeclaredAccessibility == Accessibility.Public)
             .ToList();
 
         foreach (var ctor in destCtors)
@@ -50,12 +46,12 @@ public class ConstructorRule : IValidationRule
             foreach (var param in ctor.Parameters)
             {
                 var isBound = constructorBindings.Any(b =>
-                    b.ParameterName.Equals(param.Name, System.StringComparison.OrdinalIgnoreCase));
+                    b.ParameterName.Equals(param.Name, StringComparison.OrdinalIgnoreCase));
 
                 var hasSourceProp = candidate.SourceType
                     .GetMembers()
-                    .OfType<Microsoft.CodeAnalysis.IPropertySymbol>()
-                    .Any(p => p.Name.Equals(param.Name, System.StringComparison.OrdinalIgnoreCase));
+                    .OfType<IPropertySymbol>()
+                    .Any(p => p.Name.Equals(param.Name, StringComparison.OrdinalIgnoreCase));
 
                 if (!isBound && hasSourceProp)
                 {

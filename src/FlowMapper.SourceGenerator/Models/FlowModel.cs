@@ -1,15 +1,14 @@
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Pipeline.Validator;
 
 namespace FlowMapper.SourceGenerator.Models;
 
 public class FlowModel
 {
-    public List<Flow> Flows { get; }
+    public List<FlowDescriptor> Flows { get; }
     public string MapperName { get; }
     public List<FlowDiagnosticResult> Diagnostics { get; }
 
-    public FlowModel(List<Flow> flows, string mapperName, List<FlowDiagnosticResult> diagnostics)
+    public FlowModel(List<FlowDescriptor> flows, string mapperName, List<FlowDiagnosticResult> diagnostics)
     {
         Flows = flows;
         MapperName = mapperName;

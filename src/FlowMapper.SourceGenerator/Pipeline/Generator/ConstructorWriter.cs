@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Text;
-using FlowMapper.Core;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Generator;
 
@@ -11,7 +10,7 @@ public class ConstructorWriter : ICodeWriter
         var flow = context.Flow;
 
         var constructorProps = flow.Properties
-            .Where(p => p.Strategy == MappingStrategy.Constructor)
+            .Where(p => p.Strategy == Models.MappingStrategy.Auto && p.ConstructorParameterIndex >= 0)
             .OrderBy(p => p.ConstructorParameterIndex)
             .ToList();
 
@@ -24,7 +23,7 @@ public class ConstructorWriter : ICodeWriter
             else
                 sb.AppendLine($"        var target = {flow.ConstructUsingMethod}(source);");
         }
-        else if (hasConstructor)
+        else if (constructorProps.Count > 0)
         {
             sb.Append($"        var target = new {flow.DestinationType}(");
             for (int i = 0; i < constructorProps.Count; i++)

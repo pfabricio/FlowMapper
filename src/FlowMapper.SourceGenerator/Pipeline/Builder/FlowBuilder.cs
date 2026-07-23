@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Models;
 using FlowMapper.SourceGenerator.Performance;
 
@@ -9,16 +6,14 @@ namespace FlowMapper.SourceGenerator.Pipeline.Builder;
 
 public static class FlowBuilder
 {
-    public static Flow Build(MapperDefinition candidate, FlowCache? cache = null)
+    public static FlowDescriptor Build(MapperDefinition candidate, FlowCache? cache = null)
     {
         var flow = Build(candidate.SourceType, candidate.DestinationType, new HashSet<string>(), cache);
         flow.ProfileName = candidate.ProfileName;
 
         if (candidate.ProfilePolicy != null)
         {
-            flow.Policy.EnableFlatten = candidate.ProfilePolicy.EnableFlatten;
-            flow.Policy.PreferConstructor = candidate.ProfilePolicy.PreferConstructor;
-            flow.Policy.Strictness = candidate.ProfilePolicy.Strictness;
+            flow.Policy = candidate.ProfilePolicy;
         }
 
         flow.AfterMapMethod = candidate.AfterMapMethod;
@@ -29,7 +24,7 @@ public static class FlowBuilder
         return flow;
     }
 
-    private static void ApplyExplicitMappings(Flow flow, MapperDefinition candidate)
+    private static void ApplyExplicitMappings(FlowDescriptor flow, MapperDefinition candidate)
     {
         if (candidate.IgnoredProperties.Count > 0 || candidate.ExplicitMappings.Count > 0)
         {
@@ -49,12 +44,12 @@ public static class FlowBuilder
                 }
                 else
                 {
-                    flow.Properties.Add(new PropertyFlow
+                    flow.Properties.Add(new PropertyFlowModel
                     {
                         SourceProperty = explicitMapping.SourceProperty,
                         DestinationProperty = explicitMapping.DestinationProperty,
                         MapFromExpression = explicitMapping.MapFromExpression,
-                        Strategy = MappingStrategy.Direct
+                        Strategy = MappingStrategy.Auto
                     });
                 }
                 continue;
@@ -64,7 +59,7 @@ public static class FlowBuilder
                 .FirstOrDefault(p => p.DestinationProperty == explicitMapping.DestinationProperty);
             if (existingProp != null)
             {
-                if (existingProp.Strategy is MappingStrategy.Direct or MappingStrategy.Flatten)
+                if (existingProp.Strategy is MappingStrategy.Auto)
                 {
                     existingProp.SourceProperty = explicitMapping.SourceProperty;
                     existingProp.SourcePath = explicitMapping.SourceProperty;
@@ -72,18 +67,18 @@ public static class FlowBuilder
             }
             else
             {
-                flow.Properties.Add(new PropertyFlow
+                flow.Properties.Add(new PropertyFlowModel
                 {
                     SourceProperty = explicitMapping.SourceProperty,
                     DestinationProperty = explicitMapping.DestinationProperty,
                     SourcePath = explicitMapping.SourceProperty,
-                    Strategy = MappingStrategy.Direct
+                    Strategy = MappingStrategy.Auto
                 });
             }
         }
     }
 
-    public static Flow Build(
+    public static FlowDescriptor Build(
         INamedTypeSymbol sourceType,
         INamedTypeSymbol destType,
         HashSet<string> visited,
@@ -107,17 +102,17 @@ public static class FlowBuilder
         return flow;
     }
 
-    private static Flow BuildCore(
+    private static FlowDescriptor BuildCore(
         INamedTypeSymbol sourceType,
         INamedTypeSymbol destType,
         HashSet<string> visited,
         FlowCache? cache = null)
     {
-        var flow = new Flow
+        var flow = new FlowDescriptor
         {
             SourceType = sourceType.Name,
             DestinationType = destType.Name,
-            Policy = new MappingPolicy()
+            Policy = new MappingPolicyModel()
         };
 
         var sourceProps = sourceType
@@ -152,7 +147,7 @@ public static class FlowBuilder
                     var childFlow = Build(srcNested, dstNested, visited, cache);
                     if (childFlow.Properties.Count > 0 || childFlow.NestedFlows.Count > 0)
                     {
-                        flow.NestedFlows.Add(new NestedFlow
+                        flow.NestedFlows.Add(new NestedFlowModel
                         {
                             ParentProperty = sp.Name,
                             ChildFlow = childFlow,
@@ -175,11 +170,11 @@ public static class FlowBuilder
                     flow.ConstructorBindings.Add(binding);
                     usedDestNames.Add(binding.ParameterName);
 
-                    flow.Properties.Add(new PropertyFlow
+                    flow.Properties.Add(new PropertyFlowModel
                     {
                         SourceProperty = binding.SourceProperty,
                         DestinationProperty = binding.ParameterName,
-                        Strategy = MappingStrategy.Constructor,
+                        Strategy = MappingStrategy.Auto,
                         ConstructorParameterIndex = binding.Index
                     });
                 }
@@ -196,31 +191,31 @@ public static class FlowBuilder
 
             if (hasPublicSetter)
             {
-                flow.Properties.Add(new PropertyFlow
+                flow.Properties.Add(new PropertyFlowModel
                 {
                     SourceProperty = sp.Name,
                     DestinationProperty = dp.Name,
-                    Strategy = MappingStrategy.Direct
+                    Strategy = MappingStrategy.Auto
                 });
                 usedDestNames.Add(dp.Name);
             }
         }
 
-        if (flow.Policy.EnableFlatten)
+        if (flow.Policy is { EnableFlatten: true })
         {
             foreach (var kvp in destProps)
             {
                 if (usedDestNames.Contains(kvp.Value.Name))
                     continue;
 
-                var flattenPath = FlattenResolver.ResolvePath(sourceType, kvp.Value.Name, kvp.Value.Type);
-                if (flattenPath != null)
+                var flattenResult = FlattenResolver.ResolvePath(sourceType, kvp.Value.Name, kvp.Value.Type);
+                if (flattenResult != null)
                 {
-                    flow.Properties.Add(new PropertyFlow
+                    flow.Properties.Add(new PropertyFlowModel
                     {
-                        SourceProperty = flattenPath.Segments.Last(),
+                        SourceProperty = flattenResult.Value.Segments.Last(),
                         DestinationProperty = kvp.Value.Name,
-                        SourcePath = flattenPath.FullPath,
+                        SourcePath = flattenResult.Value.FullPath,
                         Strategy = MappingStrategy.Flatten
                     });
                     usedDestNames.Add(kvp.Value.Name);

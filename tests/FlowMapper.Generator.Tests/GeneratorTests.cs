@@ -1,3 +1,4 @@
+using Xunit;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -137,7 +138,7 @@ public class GeneratorTests
 
         Assert.Empty(diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
         Assert.Contains("MapAddress", generated);
-        Assert.Contains("AddressDto = MapAddress(source.Address)", generated);
+        Assert.Contains("target.Address = MapAddress(source.Address)", generated);
     }
 
     [Fact]

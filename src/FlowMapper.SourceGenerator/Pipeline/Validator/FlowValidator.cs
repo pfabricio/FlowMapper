@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Validator;
@@ -15,7 +13,7 @@ public static class FlowValidator
         new FlattenRule()
     };
 
-    public static List<FlowDiagnosticResult> Validate(MapperDefinition candidate, Flow flow)
+    public static List<FlowDiagnosticResult> Validate(MapperDefinition candidate, FlowDescriptor flow)
     {
         var diagnostics = new List<FlowDiagnosticResult>();
         foreach (var rule in Rules)

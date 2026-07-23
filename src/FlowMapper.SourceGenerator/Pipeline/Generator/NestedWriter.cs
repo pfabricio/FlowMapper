@@ -1,5 +1,6 @@
+using System.Linq;
 using System.Text;
-using FlowMapper.Core;
+using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Generator;
 
@@ -12,24 +13,22 @@ public class NestedWriter : ICodeWriter
     {
         var flow = context.Flow;
 
-        // Write nested method CALLS (inside Map method)
         if (!context.IsNested)
         {
             foreach (var nested in flow.NestedFlows)
             {
                 var methodName = GetNestedMethodName(nested.ParentProperty);
-                sb.AppendLine($"        target.{nested.ChildFlow.DestinationType} = {methodName}(source.{nested.ParentProperty});");
+                sb.AppendLine($"        target.{nested.ParentProperty} = {methodName}(source.{nested.ParentProperty});");
             }
         }
 
-        // Write nested method DEFINITIONS (after Map method)
         foreach (var nested in flow.NestedFlows)
         {
             WriteNestedMethod(nested, sb);
         }
     }
 
-    private void WriteNestedMethod(NestedFlow nested, StringBuilder sb)
+    private void WriteNestedMethod(NestedFlowModel nested, StringBuilder sb)
     {
         var childFlow = nested.ChildFlow;
         var methodName = GetNestedMethodName(nested.ParentProperty);
@@ -48,7 +47,7 @@ public class NestedWriter : ICodeWriter
         _ctorWriter.Write(childContext, sb);
 
         var assignProps = childFlow.Properties
-            .Where(p => p.Strategy is MappingStrategy.Direct or MappingStrategy.Flatten)
+            .Where(p => p.ConstructorParameterIndex < 0)
             .ToList();
 
         var hasAssignments = assignProps.Count > 0 || childFlow.NestedFlows.Count > 0;
@@ -59,14 +58,13 @@ public class NestedWriter : ICodeWriter
             foreach (var childNested in childFlow.NestedFlows)
             {
                 var childMethod = GetNestedMethodName(childNested.ParentProperty);
-                sb.AppendLine($"        target.{childNested.ChildFlow.DestinationType} = {childMethod}(source.{childNested.ParentProperty});");
+                sb.AppendLine($"        target.{childNested.ParentProperty} = {childMethod}(source.{childNested.ParentProperty});");
             }
         }
 
         sb.AppendLine("        return target;");
         sb.AppendLine("    }");
 
-        // Recursively generate deeper nested methods
         foreach (var childNested in childFlow.NestedFlows)
         {
             WriteNestedMethod(childNested, sb);

@@ -1,5 +1,4 @@
 using System.Text;
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Generator;
@@ -30,7 +29,7 @@ public static class FlowCodeGenerator
             }
         }
 
-        var nsFlow = new FlowMapper.Core.Flow
+        var nsFlow = new FlowDescriptor
         {
             ProfileName = profileNs ?? "Default"
         };

@@ -27,6 +27,10 @@
     <ProjectReference Include="..\FlowMapper.DependencyInjection\FlowMapper.DependencyInjection.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FlowMapper.SourceGenerator\FlowMapper.SourceGenerator.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\..\README.nuget.md" Pack="true" PackagePath="\" />
+    <None Include="..\FlowMapper.SourceGenerator\bin\$(Configuration)\netstandard2.0\FlowMapper.SourceGenerator.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" Visible="false" />
   </ItemGroup>
 </Project>

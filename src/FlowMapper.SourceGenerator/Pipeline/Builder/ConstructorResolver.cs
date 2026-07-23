@@ -1,11 +1,11 @@
 using Microsoft.CodeAnalysis;
-using FlowMapper.Core;
+using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Builder;
 
 public static class ConstructorResolver
 {
-    public static List<ConstructorBinding>? Resolve(
+    public static List<ConstructorBindingModel>? Resolve(
         INamedTypeSymbol sourceType,
         INamedTypeSymbol destType,
         IReadOnlyCollection<string> alreadyMappedDestNames)
@@ -43,7 +43,7 @@ public static class ConstructorResolver
         if (bestCtor == null || bestScore == 0)
             return null;
 
-        var bindings = new List<ConstructorBinding>();
+        var bindings = new List<ConstructorBindingModel>();
         var mappedNames = new HashSet<string>(alreadyMappedDestNames, StringComparer.OrdinalIgnoreCase);
 
         for (int i = 0; i < bestCtor.Parameters.Length; i++)
@@ -52,7 +52,7 @@ public static class ConstructorResolver
             if (sourceProps.TryGetValue(param.Name, out var sp) &&
                 SymbolEqualityComparer.Default.Equals(sp.Type, param.Type))
             {
-                bindings.Add(new ConstructorBinding
+                bindings.Add(new ConstructorBindingModel
                 {
                     ParameterName = param.Name,
                     SourceProperty = sp.Name,

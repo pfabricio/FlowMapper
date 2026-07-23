@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Pipeline.Validator;
@@ -9,12 +6,12 @@ public class FlattenRule : IValidationRule
 {
     public string RuleId => "Flatten";
 
-    public IEnumerable<FlowDiagnosticResult> Validate(MapperDefinition candidate, Flow flow)
+    public IEnumerable<FlowDiagnosticResult> Validate(MapperDefinition candidate, FlowDescriptor flow)
     {
         var results = new List<FlowDiagnosticResult>();
 
         var flattenProps = flow.Properties
-            .Where(p => p.Strategy == MappingStrategy.Flatten)
+            .Where(p => p.Strategy == Models.MappingStrategy.Flatten)
             .ToList();
 
         foreach (var prop in flattenProps)
@@ -27,8 +24,7 @@ public class FlattenRule : IValidationRule
                 continue;
             }
 
-            // FM0009 — Ambiguous path (when multiple paths exist)
-            var pathSegments = prop.SourcePath.Split('.');
+            var pathSegments = prop.SourcePath!.Split('.');
             if (pathSegments.Length > 3)
             {
                 results.Add(FlowDiagnosticResult.Error(
@@ -36,7 +32,6 @@ public class FlattenRule : IValidationRule
                     $"Multiple paths found for property '{prop.DestinationProperty}'"));
             }
 
-            // FM0011 — Invalid depth / cycle-like patterns
             if (pathSegments.Length > 5)
             {
                 results.Add(FlowDiagnosticResult.Error(

@@ -1,5 +1,6 @@
-﻿using FlowMapper.Abstractions;
+﻿using Xunit;
 using FlowMapper.Core;
+using FlowMapper.Abstractions;
 
 namespace FlowMapper.UnitTests;
 
@@ -8,36 +9,28 @@ public class CoreModelTests
     [Fact]
     public void Flow_Has_Default_Properties()
     {
-        var flow = new Flow();
-        Assert.Equal("Default", flow.ProfileName);
+        var sig = new FlowSignature { SourceType = typeof(string), DestinationType = typeof(int) };
+        var flow = new Flow { Signature = sig, Name = "Test" };
         Assert.NotNull(flow.Properties);
         Assert.NotNull(flow.NestedFlows);
-        Assert.NotNull(flow.ConstructorBindings);
-        Assert.NotNull(flow.Policy);
+        Assert.NotNull(flow.Signature);
     }
 
     [Fact]
     public void MappingPolicy_Defaults()
     {
         var policy = new MappingPolicy();
-        Assert.Equal(StrictnessLevel.None, policy.Strictness);
+        Assert.Equal(StrictnessLevel.Warning, policy.Strictness);
         Assert.True(policy.EnableFlatten);
         Assert.False(policy.PreferConstructor);
     }
 
     [Fact]
-    public void FlowSignature_CacheKey_Format()
+    public void FlowSignature_Equals_Works()
     {
-        var sig = new FlowSignature
-        {
-            ProfileName = "Api",
-            SourceTypeId = "User",
-            DestinationTypeId = "UserDto",
-            PolicyHash = "ABC",
-            PropertyHash = "DEF"
-        };
-        var key = sig.ToCacheKey();
-        Assert.Equal("Api|User|UserDto|ABC|DEF", key);
+        var sig1 = new FlowSignature { SourceType = typeof(string), DestinationType = typeof(int) };
+        var sig2 = new FlowSignature { SourceType = typeof(string), DestinationType = typeof(int) };
+        Assert.Equal(sig1, sig2);
     }
 
     [Fact]
@@ -55,13 +48,17 @@ public class CoreModelTests
     }
 
     [Fact]
-    public void PropertyFlow_Supports_All_Strategies()
+    public void PropertyFlow_Roundtrips()
     {
-        foreach (var strategy in Enum.GetValues<MappingStrategy>())
+        var pf = new PropertyFlow
         {
-            var pf = new PropertyFlow { Strategy = strategy };
-            Assert.Equal(strategy, pf.Strategy);
-        }
+            SourceProperty = "Name",
+            DestinationProperty = "FullName",
+            SourceType = typeof(string),
+            DestinationType = typeof(string)
+        };
+        Assert.Equal("Name", pf.SourceProperty);
+        Assert.Equal("FullName", pf.DestinationProperty);
     }
 
     [Fact]
@@ -69,75 +66,38 @@ public class CoreModelTests
     {
         var path = new FlattenPath
         {
-            FullPath = "Address.Street",
-            Segments = new List<string> { "Address", "Street" },
-            TargetProperty = "Street"
+            ColumnName = "Address_Street",
+            PathSegments = new List<string> { "Address", "Street" }
         };
-        Assert.Equal("Address.Street", path.FullPath);
-        Assert.Equal(2, path.Segments.Count);
+        Assert.Equal("Address.Street", path.PropertyPath);
+        Assert.Equal(2, path.PathSegments.Count);
     }
 
     [Fact]
     public void NestedFlow_Has_ChildFlow()
     {
+        var sig = new FlowSignature { SourceType = typeof(string), DestinationType = typeof(int) };
         var nested = new NestedFlow
         {
             ParentProperty = "Address",
-            ChildFlow = new Flow { SourceType = "Address", DestinationType = "AddressDto" }
+            ChildFlow = new Flow { Signature = sig, Name = "Child" }
         };
         Assert.NotNull(nested.ChildFlow);
         Assert.Equal("Address", nested.ParentProperty);
     }
+
+    [Fact]
+    public void ExplicitMapping_Roundtrips()
+    {
+        var m = new ExplicitMapping
+        {
+            SourceProperty = "Name",
+            DestinationProperty = "FullName",
+            IsPathMapping = true,
+            PathSegments = new List<string> { "Nested", "Name" }
+        };
+        Assert.True(m.IsPathMapping);
+        Assert.Equal(2, m.PathSegments.Count);
+    }
 }
 
-public class ProfileDefinitionTests
-{
-    [Fact]
-    public void CreateMap_Returns_MappingExpression()
-    {
-        var profile = new ProfileDefinition { Name = "Test" };
-        var expr = profile.CreateMap<User, UserDto>();
-        Assert.NotNull(expr);
-    }
-
-    private class User { public int Id { get; set; } }
-    private class UserDto { public int Id { get; set; } }
-}
-
-public class MappingExpressionTests
-{
-    [Fact]
-    public void Ignore_Does_Not_Throw()
-    {
-        var expr = new MappingExpression<Source, Dest>();
-        var result = expr.Ignore(d => d.Name);
-        Assert.Same(expr, result);
-    }
-
-    [Fact]
-    public void UseConstructor_Returns_Self()
-    {
-        var expr = new MappingExpression<Source, Dest>();
-        var result = expr.UseConstructor();
-        Assert.Same(expr, result);
-    }
-
-    [Fact]
-    public void DisableFlatten_Returns_Self()
-    {
-        var expr = new MappingExpression<Source, Dest>();
-        var result = expr.DisableFlatten();
-        Assert.Same(expr, result);
-    }
-
-    [Fact]
-    public void ForMember_Returns_Self()
-    {
-        var expr = new MappingExpression<Source, Dest>();
-        var result = expr.ForMember(d => d.Id, o => o.MapFrom("Identifier"));
-        Assert.Same(expr, result);
-    }
-
-    private class Source { public int Id { get; set; } }
-    private class Dest { public int Id { get; set; } public string Name { get; set; } = ""; }
-}

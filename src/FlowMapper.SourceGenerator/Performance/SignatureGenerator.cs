@@ -1,36 +1,19 @@
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator.Performance;
 
 public static class SignatureGenerator
 {
-    public static FlowSignature Generate(Flow flow)
+    public static string GeneratePropertyHash(FlowDescriptor flow)
     {
-        var propHash = string.Join("|",
+        return string.Join("|",
             flow.Properties
                 .OrderBy(p => p.DestinationProperty)
                 .Select(p => $"{p.DestinationProperty}:{p.SourceProperty}:{p.Strategy}"));
-
-        return new FlowSignature
-        {
-            SourceTypeId = flow.SourceType,
-            DestinationTypeId = flow.DestinationType,
-            ProfileName = flow.ProfileName,
-            PolicyHash = flow.Policy.ToString(),
-            PropertyHash = propHash
-        };
     }
 
-    public static FlowSignature GenerateFromCandidate(MapperDefinition candidate)
+    public static string GenerateCacheKey(MapperDefinition candidate)
     {
-        return new FlowSignature
-        {
-            SourceTypeId = candidate.SourceType.ToDisplayString(),
-            DestinationTypeId = candidate.DestinationType.ToDisplayString(),
-            ProfileName = "Default",
-            PolicyHash = "v1",
-            PropertyHash = string.Empty
-        };
+        return $"{candidate.SourceType.ToDisplayString()}|{candidate.DestinationType.ToDisplayString()}|{candidate.ProfileName}";
     }
 }

@@ -1,8 +1,29 @@
-﻿using FlowMapper.Abstractions;
+﻿using System.Data;
+using Xunit;
+using FlowMapper.Abstractions;
 using FlowMapper.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FlowMapper.IntegrationTests;
+
+public class StubDialect : IDialect
+{
+    public string ApplyPagination(string sql, int offset, int limit) => sql;
+    public string GetIdentityQuery() => "SELECT SCOPE_IDENTITY()";
+    public string NormalizeParameter(string name) => $"@{name}";
+}
+
+public class StubDatabaseProvider : IDatabaseProvider
+{
+    public string Name => "Stub";
+    public IDialect Dialect => new StubDialect();
+    public Version Version => new(1, 0);
+    public IDbConnection CreateConnection() => throw new NotSupportedException();
+    public IDbCommand CreateCommand(string sql, IDbConnection connection, IDbTransaction? transaction = null)
+        => throw new NotSupportedException();
+    public IDataParameter CreateParameter(string name, object? value)
+        => throw new NotSupportedException();
+}
 
 public class DependencyInjectionTests
 {
@@ -10,22 +31,23 @@ public class DependencyInjectionTests
     public void AddFlowMapper_Registers_IFlowMapper()
     {
         var services = new ServiceCollection();
+        services.AddSingleton<IDatabaseProvider>(new StubDatabaseProvider());
         services.AddFlowMapper();
         var provider = services.BuildServiceProvider();
 
-        var mapper = provider.GetService<IFlowMapper>();
+        var mapper = provider.GetRequiredService<IFlowMapper>();
         Assert.NotNull(mapper);
     }
 
     [Fact]
-    public void AddFlowMapper_Registers_FlowMapperOptions()
+    public void AddFlowMapper_Configures_MappingOptions()
     {
         var services = new ServiceCollection();
-        services.AddFlowMapper(cfg => cfg.DefaultProfile = "Api");
+        services.AddFlowMapper(cfg => cfg.ConfigureMapping(m => m.DefaultProfile = "Api"));
         var provider = services.BuildServiceProvider();
 
         var options = provider.GetRequiredService<FlowMapperOptions>();
-        Assert.Equal("Api", options.DefaultProfile);
+        Assert.Equal("Api", options.Mapping.DefaultProfile);
     }
 
     [Fact]
@@ -36,15 +58,16 @@ public class DependencyInjectionTests
         var provider = services.BuildServiceProvider();
 
         var options = provider.GetRequiredService<FlowMapperOptions>();
-        Assert.Equal("Default", options.DefaultProfile);
-        Assert.True(options.EnableFlatten);
-        Assert.Equal(StrictnessLevel.None, options.Strictness);
+        Assert.Equal("Default", options.Mapping.DefaultProfile);
+        Assert.True(options.Mapping.EnableFlatten);
+        Assert.Equal(StrictnessLevel.None, options.Mapping.Strictness);
     }
 
     [Fact]
     public void FlowMapperService_Throws_When_Mapper_Not_Found()
     {
         var services = new ServiceCollection();
+        services.AddSingleton<IDatabaseProvider>(new StubDatabaseProvider());
         services.AddFlowMapper();
         var provider = services.BuildServiceProvider();
 
@@ -62,6 +85,7 @@ public class DependencyInjectionTests
     public void FlowMapperService_Resolves_Registered_Mapper()
     {
         var services = new ServiceCollection();
+        services.AddSingleton<IDatabaseProvider>(new StubDatabaseProvider());
         services.AddFlowMapper();
         services.AddTransient<IMapper<Source, Dest>, ManualMapper>();
         var provider = services.BuildServiceProvider();

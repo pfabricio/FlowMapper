@@ -1,4 +1,3 @@
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Models;
 using FlowMapper.SourceGenerator.Performance;
 using FlowMapper.SourceGenerator.Pipeline.Builder;
@@ -11,7 +10,7 @@ public static class FlowPipeline
     public static FlowModel Execute(IReadOnlyList<MapperDefinition> definitions)
     {
         var cache = new FlowCache();
-        var flows = new List<Flow>();
+        var flows = new List<FlowDescriptor>();
         var diagnostics = new List<FlowDiagnosticResult>();
 
         foreach (var definition in definitions)
@@ -25,12 +24,12 @@ public static class FlowPipeline
         return new FlowModel(flows, mapperName, diagnostics);
     }
 
-    public static Flow Build(MapperDefinition definition, FlowCache? cache = null)
+    public static FlowDescriptor Build(MapperDefinition definition, FlowCache? cache = null)
     {
         return FlowBuilder.Build(definition, cache);
     }
 
-    public static List<FlowDiagnosticResult> Validate(MapperDefinition definition, Flow flow)
+    public static List<FlowDiagnosticResult> Validate(MapperDefinition definition, FlowDescriptor flow)
     {
         return FlowValidator.Validate(definition, flow);
     }

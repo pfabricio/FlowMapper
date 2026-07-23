@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using FlowMapper.Core;
 
 namespace FlowMapper.SourceGenerator.Models;
 
@@ -11,7 +9,7 @@ public class MapperDefinition
     public INamedTypeSymbol MapperType { get; init; } = null!;
     public AttributeData Attribute { get; init; } = null!;
     public string ProfileName { get; init; } = "Default";
-    public MappingPolicy? ProfilePolicy { get; init; }
+    public MappingPolicyModel? ProfilePolicy { get; init; }
     public HashSet<string> IgnoredProperties { get; init; } = new();
     public List<ExplicitMappingInfo> ExplicitMappings { get; init; } = new();
     public string? AfterMapMethod { get; init; }

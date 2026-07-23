@@ -1,10 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using FlowMapper.Abstractions;
-using FlowMapper.Core;
 using FlowMapper.SourceGenerator.Models;
 
 namespace FlowMapper.SourceGenerator;
@@ -20,7 +16,7 @@ public static class MapperDefinitionFactory
         var destType = (INamedTypeSymbol)typeArgs.TypeArguments[1];
 
         var profileName = "Default";
-        MappingPolicy? profilePolicy = null;
+        MappingPolicyModel? profilePolicy = null;
         var ignoredProperties = new HashSet<string>();
         var explicitMappings = new List<ExplicitMappingInfo>();
 
@@ -33,7 +29,7 @@ public static class MapperDefinitionFactory
             if (profileAttr.ConstructorArguments.Length > 0)
                 profileName = profileAttr.ConstructorArguments[0].Value?.ToString() ?? "Default";
 
-            profilePolicy = new MappingPolicy();
+            profilePolicy = new MappingPolicyModel();
 
             foreach (var namedArg in profileAttr.NamedArguments)
             {
@@ -46,7 +42,7 @@ public static class MapperDefinitionFactory
                         profilePolicy.PreferConstructor = (bool)namedArg.Value.Value!;
                         break;
                     case "Strictness":
-                        profilePolicy.Strictness = (StrictnessLevel)(int)namedArg.Value.Value!;
+                        profilePolicy.Strictness = (int)namedArg.Value.Value!;
                         break;
                 }
             }
@@ -130,14 +126,13 @@ public static class MapperDefinitionFactory
                 if (methodSymbol.TypeArguments[0] is not INamedTypeSymbol srcType) continue;
                 if (methodSymbol.TypeArguments[1] is not INamedTypeSymbol dstType) continue;
 
-                var policy = new MappingPolicy();
+                var policy = new MappingPolicyModel();
                 var ignoredProperties = new HashSet<string>();
                 var explicitMappings = new List<ExplicitMappingInfo>();
                 string? afterMapMethod = null;
                 string? constructUsingMethod = null;
                 var mapperName = $"{srcType.Name}To{dstType.Name}Mapper";
 
-                // Walk up to outermost invocation (root of fluent chain)
                 var rootInvocation = invocation;
                 while (rootInvocation.Parent is MemberAccessExpressionSyntax memberAccess
                        && memberAccess.Parent is InvocationExpressionSyntax parentInvocation)
