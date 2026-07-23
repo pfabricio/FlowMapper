@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>FlowMapper</RootNamespace>
     <PackageId>FlowMapper</PackageId>
+    <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
     <Title>FlowMapper V2</Title>
     <Description>All-in-one meta-package: compile-time object mapper, micro-ORM, source generator, DI integration, and database providers (SQL Server, PostgreSQL, MySQL, Oracle)</Description>
   </PropertyGroup>
@@ -24,5 +25,8 @@
     <ProjectReference Include="..\FlowMapper.Diagnostics\FlowMapper.Diagnostics.csproj" />
     <ProjectReference Include="..\FlowMapper.Deserialization\FlowMapper.Deserialization.csproj" />
     <ProjectReference Include="..\FlowMapper.DependencyInjection\FlowMapper.DependencyInjection.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.nuget.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

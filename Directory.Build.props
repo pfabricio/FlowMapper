@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <Version>2.0.0</Version>
     <Authors>Paulo Fabricio</Authors>
     <Company>DevSpace</Company>
     <Product>FlowMapper V2</Product>
@@ -10,7 +11,6 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>mapper;orm;micro-orm;source-generator;roslyn;data-access;object-mapper</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

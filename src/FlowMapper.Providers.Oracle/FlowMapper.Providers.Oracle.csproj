@@ -9,6 +9,6 @@
     <ProjectReference Include="..\FlowMapper.Providers.Abstractions\FlowMapper.Providers.Abstractions.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Oracle.ManagedDataAccess" Version="21.12.0" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.100" />
   </ItemGroup>
 </Project>

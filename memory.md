@@ -139,3 +139,51 @@ Implemented cascade materialization (SQL → DTO nested class) via property-driv
 
 ### Status
 Build OK, 60/60 tests pass.
+
+## 2026-07-22 02:04:31 UTC
+**Session 2 — 22 Jul 2026 (corrigindo diretório correto)**
+
+### Problema
+Estávamos trabalhando em `E:\LLM-Local\vol\workspace\FlowMapperV2` (pasta errada). O repositório real é `D:\Programas Visuais\FlowMapper` (remote: `https://github.com/pfabricio/FlowMapper.git`, branch `v2`).
+
+### Feito (nesta sessão, no diretório correto)
+- **`TextDelimiter` enum** (`PontoVirgula`, `Tabulacao`) em `FlowMapper.Abstractions`
+- **`FlowMapper.Deserialization`** projeto completo:
+  - `FlowMapper.Deserialization.csproj` (refs: Abstractions, Materializer, Execution)
+  - `IDeserializer` interface
+  - `DeserializationPipeline` com:
+    - JSON → DTO nested via `FlattenJson` + `BuildPlanFlat<T>` + `GroupBindings` recursivo
+    - XML → DTO nested via `WalkXml` + mesmo pipeline de materialização
+    - TXT → DTO flat com header (case-insensitive) ou posicional
+- **`IFlowMapper` unificado** em `FlowMapper.Abstractions`:
+  - `Map`, `GetMapper` (existente)
+  - `QueryAsync<T>`, `QuerySingleAsync<T>`, `QuerySingleOrDefaultAsync<T>`, `QueryScalarAsync<T>`, `StreamAsync<T>`
+  - `CommandAsync`, `CommandScalarAsync`
+  - `FromJson<T>`, `FromJsonList<T>`, `FromXml<T>`, `FromText<T>`
+  - `CreateScope`
+- **`FlowMapperService`** atualizado: compõe `IRapidMapper` + `IDeserializer` via DI
+- **`IFlowMapper.cs` antigo deletado** de `FlowMapper.DependencyInjection` (causava ambiguidade)
+- **`FlowMapper.DependencyInjection.csproj`** referenciando `FlowMapper.Deserialization`
+- **`ServiceCollectionExtensions`** registrando `IDeserializer` (singleton)
+- **Meta-package `FlowMapper.csproj`** incluindo `FlowMapper.Deserialization`
+- **`CombinedMapping/Program.cs`** atualizado com 7 cenários
+- **`README.md`** e **`README.nuget.md`** atualizados com V2 features
+- **`Directory.Build.props`** apontando `PackageReadmeFile` para `README.nuget.md`
+- **Build: 0 erros** nos projetos tocados
+- **Commit + push** (`3aa0103` no branch `v2`)
+
+## Pendente — SourceGenerator (reescrever)
+
+O SourceGenerator atual foi escrito contra uma versão anterior da API Core. Os tipos mudaram, então não compila nem funciona.
+
+### Abordagem: SG auto-contido (modelos próprios)
+Criar DTOs internos no SG em vez de referenciar `FlowMapper.Core` direto. Isso desacopla o SG da API de runtime.
+
+### Passos
+1. Criar DTOs internos: `FlowModel`, `PropertyFlowModel`, `NestedFlowModel`, `ConstructorBindingModel`, `FlattenPathModel`, `MappingPolicyModel`, `FlowSignatureModel`, `MappingStrategy` enum
+2. Atualizar `FlowBuilder.cs` (Roslyn → modelo interno) para usar os DTOs
+3. Atualizar validadores (`FlattenRule`, `CycleRule`, `ConstructorRule`, etc.) para usarem os DTOs
+4. Atualizar writers (`PropertyWriter`, `ConstructorWriter`, `NestedWriter`, etc.) para emitir código compatível com a API **atual** de Core
+5. Ajustar `SignatureGenerator.cs` — `FlowSignature` atual só tem `SourceType` + `DestinationType` (ambos `Type`)
+6. Testar com `FlowMapper.Generator.Tests`
+
