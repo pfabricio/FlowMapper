@@ -1,6 +1,8 @@
 # FlowMapper V2
 
-**Compile-time object mapper + micro-ORM + deserializer + database providers under a single `IFlowMapper` interface.**
+**FlowMapper is a compile-time data mapping platform for .NET.**
+
+It combines object-object mapping, micro-ORM, deserialization, source generation, and execution pipelines under a unified architecture focused on **performance**, **extensibility**, and **zero runtime reflection**.
 
 ---
 
@@ -72,6 +74,75 @@ services.AddFlowMapper(builder =>
     builder.AddProvider<SqlServerProvider>("Server=...;");
 });
 ```
+
+### Architecture
+
+```
+           SQL / JSON / XML / Object
+                     │
+                     ▼
+         ┌───────────────────────┐
+         │   Compiler Pipeline   │
+         │  (13 optimization passes) │
+         └───────────┬───────────┘
+                     │
+                     ▼
+         ┌───────────────────────┐
+         │   Execution Plan      │
+         │   (Materialization,   │
+         │    Mapping, SQL)      │
+         └───────────┬───────────┘
+                     │
+         ┌───────────┴───────────┐
+         ▼                       ▼
+   Mapping Pipeline     Materialization Pipeline
+   (Object → Object)    (DataReader → Object)
+         │                       │
+         ▼                       ▼
+   Runtime Engine ────────── Execution Scope
+         │
+         ▼
+     DTO / Entity
+```
+
+### Why FlowMapper?
+
+| Benefit | Description |
+|---------|-------------|
+| ✅ **Compile-time Mapping** | Source generator produces `IMapper<,>` code at build time |
+| ✅ **Zero Runtime Reflection** | No `System.Reflection` in hot paths — faster startup & execution |
+| ✅ **Source Generator** | Roslyn `IIncrementalGenerator` — errors show at compile time |
+| ✅ **Native AOT Ready** | No dynamic code generation — works with `nativeaot` |
+| ✅ **Nested Mapping** | Recursive object-to-object and SQL-to-DTO with aliases |
+| ✅ **Flatten Mapping** | Auto-flatten `Address.Street` → `AddressStreet` with `_` separator |
+| ✅ **Micro-ORM** | `QueryAsync<T>`, `StreamAsync<T>`, `CommandAsync<T>` with cascade materialization |
+| ✅ **4 SQL Providers** | SQL Server, PostgreSQL, MySQL, Oracle — each with dialect-aware pagination |
+| ✅ **Execution Pipelines** | Middleware-based `IPipelineBehavior` chain for cross-cutting concerns |
+| ✅ **Materialization Pipeline** | Caching, conversion, and null-handling middlewares |
+| ✅ **Validation Pipeline** | Rule-based validation with `IValidationRule` |
+| ✅ **Diagnostics Pipeline** | Event and middleware-based diagnostics with metrics |
+| ✅ **Compiler Pipeline** | 13 optimization passes (flatten, fusion, constant eval, dead metadata elimination) |
+| ✅ **Plugin SDK** | Extend everything: providers, stages, passes, rules, generators |
+| ✅ **Deserialization** | JSON, XML, TXT/CSV — all with nested DTO support |
+| ✅ **Caching** | 5 levels: external `ICacheProvider`, compiled delegates, flows, plans |
+
+### Comparison
+
+| Feature | FlowMapper | AutoMapper | Mapster | Dapper |
+|---------|-----------|------------|---------|--------|
+| Compile-time Mapping | ✅ | ❌ | ✅ | ❌ |
+| Source Generator | ✅ | ❌ | ✅ | ❌ |
+| Nested Mapping | ✅ | ✅ | ✅ | ❌ |
+| Flatten Mapping | ✅ | ✅ | ✅ | ❌ |
+| Micro-ORM | ✅ | ❌ | ❌ | ✅ |
+| SQL Providers (4) | ✅ | ❌ | ❌ | ✅ |
+| Materialization Pipeline | ✅ | ❌ | ❌ | Partial |
+| Execution Plans | ✅ | ❌ | ❌ | ❌ |
+| Plugin SDK | ✅ | ❌ | ❌ | ❌ |
+| Diagnostics Pipeline | ✅ | ❌ | ❌ | ❌ |
+| Validation Pipeline | ✅ | ❌ | ❌ | ❌ |
+| Deserialization (JSON/XML/TXT) | ✅ | ❌ | ❌ | ❌ |
+| Native AOT | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -307,6 +378,17 @@ CreateMap<Order, OrderDto>()
 ## 5. Source Generator
 
 **FlowMapperGenerator** is a Roslyn `IIncrementalGenerator` that generates `IMapper<,>` implementations at **compile-time**, eliminating runtime reflection.
+
+**Source Generator Benefits:**
+
+| Benefit | Description |
+|---------|-------------|
+| ⚡ **No runtime reflection** | All mapping is compiled C# — no `System.Reflection` in hot paths |
+| 🚀 **Faster startup** | No runtime expression compilation; code is ready at startup |
+| 🔍 **Better debugging** | Step through generated code like any other class |
+| ✅ **Compile-time validation** | Mapping errors appear during build, not in production |
+| 📦 **Reduced allocations** | Optimized code without dynamic delegates or reflection dictionaries |
+| 🏗️ **Native AOT friendly** | No dynamic IL generation — compatible with `nativeaot` publish |
 
 **How it works:**
 
@@ -935,6 +1017,53 @@ public class MyProviderPlugin : IFlowMapperPlugin, IProviderPlugin
 var loader = new PluginLoader();
 loader.LoadFromAssembly(typeof(MyProviderPlugin).Assembly);
 ```
+
+---
+
+## Ecosystem
+
+```
+        FlowCore (CQRS / Mediator)
+              │
+              ▼
+         FlowMapper
+         ┌──┴──┐
+    Object    Data
+    Mapping   Access
+         │       │
+         ▼       ▼
+     FlowRuntime
+         │
+         ▼
+   Applications
+```
+
+FlowMapper is part of a growing .NET ecosystem. The modular design allows each layer to be used independently.
+
+---
+
+## Roadmap
+
+### Version 2.0
+- ✅ Object-Object Mapping with fluent API
+- ✅ Source Generator (compile-time `IMapper<,>`)
+- ✅ Micro-ORM with nested materialization
+- ✅ 4 SQL Providers (SQL Server, PostgreSQL, MySQL, Oracle)
+- ✅ JSON, XML, TXT deserialization
+- ✅ DI Integration (`AddFlowMapper`)
+
+### Version 2.1
+- ✅ Plugin SDK
+- ✅ Compiler Pipeline with 13 optimization passes
+- ✅ Diagnostics Pipeline
+- ✅ Validation Pipeline
+- ✅ Execution Artifacts
+
+### Future
+- 🔲 Query Optimizer
+- 🔲 Additional Providers (SQLite, Cosmos DB)
+- 🔲 Roslyn Analyzer Improvements
+- 🔲 CLI scaffolding tool
 
 ---
 
