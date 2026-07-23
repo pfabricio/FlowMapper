@@ -31,6 +31,7 @@ dlldata.c
 project.lock.json
 project.fragment.lock.json
 artifacts/
+!src/FlowMapper.Execution/Artifacts/
 ScaffoldingReadMe.txt
 *_i.c
 *_p.c
