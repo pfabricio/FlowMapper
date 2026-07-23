@@ -6,7 +6,7 @@
     <Product>FlowMapper V2</Product>
     <Description>Compile-time object mapper and data access micro-ORM with zero runtime reflection</Description>
     <Copyright>Copyright FlowMapper</Copyright>
-    <PackageProjectUrl>https://github.com/anomalyco/FlowMapper</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/pfabricio/FlowMapper</PackageProjectUrl>
     <RepositoryUrl>https://github.com/anomalyco/FlowMapper.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>mapper;orm;micro-orm;source-generator;roslyn;data-access;object-mapper</PackageTags>

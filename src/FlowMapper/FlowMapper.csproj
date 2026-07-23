@@ -6,31 +6,64 @@
     <RootNamespace>FlowMapper</RootNamespace>
     <PackageId>FlowMapper</PackageId>
     <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <Title>FlowMapper V2</Title>
     <Description>All-in-one meta-package: compile-time object mapper, micro-ORM, source generator, DI integration, and database providers (SQL Server, PostgreSQL, MySQL, Oracle)</Description>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" />
-    <ProjectReference Include="..\FlowMapper.Primitives\FlowMapper.Primitives.csproj" />
-    <ProjectReference Include="..\FlowMapper.Core\FlowMapper.Core.csproj" />
-    <ProjectReference Include="..\FlowMapper.Execution\FlowMapper.Execution.csproj" />
-    <ProjectReference Include="..\FlowMapper.Materializer\FlowMapper.Materializer.csproj" />
-    <ProjectReference Include="..\FlowMapper.Providers.Abstractions\FlowMapper.Providers.Abstractions.csproj" />
-    <ProjectReference Include="..\FlowMapper.Providers.SqlServer\FlowMapper.Providers.SqlServer.csproj" />
-    <ProjectReference Include="..\FlowMapper.Providers.PostgreSql\FlowMapper.Providers.PostgreSql.csproj" />
-    <ProjectReference Include="..\FlowMapper.Providers.MySql\FlowMapper.Providers.MySql.csproj" />
-    <ProjectReference Include="..\FlowMapper.Providers.Oracle\FlowMapper.Providers.Oracle.csproj" />
-    <ProjectReference Include="..\FlowMapper.Compiler\FlowMapper.Compiler.csproj" />
-    <ProjectReference Include="..\FlowMapper.Runtime\FlowMapper.Runtime.csproj" />
-    <ProjectReference Include="..\FlowMapper.Diagnostics\FlowMapper.Diagnostics.csproj" />
-    <ProjectReference Include="..\FlowMapper.Deserialization\FlowMapper.Deserialization.csproj" />
-    <ProjectReference Include="..\FlowMapper.DependencyInjection\FlowMapper.DependencyInjection.csproj" />
+    <ProjectReference Include="..\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Primitives\FlowMapper.Primitives.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Core\FlowMapper.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Execution\FlowMapper.Execution.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Materializer\FlowMapper.Materializer.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Providers.Abstractions\FlowMapper.Providers.Abstractions.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Providers.SqlServer\FlowMapper.Providers.SqlServer.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Providers.PostgreSql\FlowMapper.Providers.PostgreSql.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Providers.MySql\FlowMapper.Providers.MySql.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Providers.Oracle\FlowMapper.Providers.Oracle.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Compiler\FlowMapper.Compiler.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Runtime\FlowMapper.Runtime.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Diagnostics\FlowMapper.Diagnostics.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.Deserialization\FlowMapper.Deserialization.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\FlowMapper.DependencyInjection\FlowMapper.DependencyInjection.csproj" PrivateAssets="all" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\FlowMapper.SourceGenerator\FlowMapper.SourceGenerator.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="..\..\README.nuget.md" Pack="true" PackagePath="\" />
-    <None Include="..\FlowMapper.SourceGenerator\bin\$(Configuration)\netstandard2.0\FlowMapper.SourceGenerator.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" Visible="false" />
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+    <None Include="..\FlowMapper.SourceGenerator\bin\$(Configuration)\netstandard2.0\FlowMapper.SourceGenerator.dll" Pack="true" PackagePath="analyzers\dotnet\cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+    <PackageReference Include="Npgsql" Version="8.0.1" />
+    <PackageReference Include="MySqlConnector" Version="2.3.1" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.100" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\FlowMapper.Abstractions\bin\$(Configuration)\net8.0\FlowMapper.Abstractions.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Primitives\bin\$(Configuration)\net8.0\FlowMapper.Primitives.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Core\bin\$(Configuration)\net8.0\FlowMapper.Core.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Execution\bin\$(Configuration)\net8.0\FlowMapper.Execution.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Materializer\bin\$(Configuration)\net8.0\FlowMapper.Materializer.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Providers.Abstractions\bin\$(Configuration)\net8.0\FlowMapper.Providers.Abstractions.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Providers.SqlServer\bin\$(Configuration)\net8.0\FlowMapper.Providers.SqlServer.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Providers.PostgreSql\bin\$(Configuration)\net8.0\FlowMapper.Providers.PostgreSql.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Providers.MySql\bin\$(Configuration)\net8.0\FlowMapper.Providers.MySql.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Providers.Oracle\bin\$(Configuration)\net8.0\FlowMapper.Providers.Oracle.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Compiler\bin\$(Configuration)\net8.0\FlowMapper.Compiler.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Runtime\bin\$(Configuration)\net8.0\FlowMapper.Runtime.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Diagnostics\bin\$(Configuration)\net8.0\FlowMapper.Diagnostics.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Deserialization\bin\$(Configuration)\net8.0\FlowMapper.Deserialization.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.DependencyInjection\bin\$(Configuration)\net8.0\FlowMapper.DependencyInjection.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.Validation\bin\$(Configuration)\net8.0\FlowMapper.Validation.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
+    <None Include="..\FlowMapper.PluginSdk\bin\$(Configuration)\net8.0\FlowMapper.PluginSdk.dll" Pack="true" PackagePath="lib\$(TargetFramework)" Visible="false" />
   </ItemGroup>
 </Project>
