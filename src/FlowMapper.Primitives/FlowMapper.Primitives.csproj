@@ -4,5 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FlowMapper.Primitives</RootNamespace>
+      <IsPackable>false</IsPackable>
   </PropertyGroup>
 </Project>
+

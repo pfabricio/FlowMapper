@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FlowMapper.Deserialization</RootNamespace>
+      <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" />
@@ -11,3 +12,4 @@
     <ProjectReference Include="..\FlowMapper.Execution\FlowMapper.Execution.csproj" />
   </ItemGroup>
 </Project>
+

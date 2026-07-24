@@ -4,5 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FlowMapper.Abstractions</RootNamespace>
+      <IsPackable>false</IsPackable>
   </PropertyGroup>
 </Project>
+

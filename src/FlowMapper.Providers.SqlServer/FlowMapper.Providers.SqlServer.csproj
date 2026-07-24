@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FlowMapper.Providers.SqlServer</RootNamespace>
+      <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\FlowMapper.Providers.Abstractions\FlowMapper.Providers.Abstractions.csproj" />
@@ -12,3 +13,4 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
   </ItemGroup>
 </Project>
+

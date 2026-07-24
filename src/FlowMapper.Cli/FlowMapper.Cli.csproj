@@ -5,5 +5,7 @@
     <PackageId>FlowMapper.Cli</PackageId>
     <Description>Ferramenta de linha de comando do FlowMapper.</Description>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+      <IsPackable>false</IsPackable>
   </PropertyGroup>
 </Project>
+

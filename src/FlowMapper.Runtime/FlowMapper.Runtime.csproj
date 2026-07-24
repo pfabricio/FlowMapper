@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FlowMapper.Runtime</RootNamespace>
+      <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\FlowMapper.Execution\FlowMapper.Execution.csproj" />
@@ -11,3 +12,4 @@
     <ProjectReference Include="..\FlowMapper.Providers.Abstractions\FlowMapper.Providers.Abstractions.csproj" />
   </ItemGroup>
 </Project>
+

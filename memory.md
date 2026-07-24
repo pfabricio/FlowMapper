@@ -187,3 +187,27 @@ Criar DTOs internos no SG em vez de referenciar `FlowMapper.Core` direto. Isso d
 5. Ajustar `SignatureGenerator.cs` — `FlowSignature` atual só tem `SourceType` + `DestinationType` (ambos `Type`)
 6. Testar com `FlowMapper.Generator.Tests`
 
+
+## 2026-07-24 00:11:46 UTC
+## Sessão: CI fix + v2.0.0 NuGet publish (23 Jul 2026)
+
+**Problema 1:** CI build falhava com 58 erros CS0234 — namespace `FlowMapper.Execution.Artifacts` não existia.
+- **Causa raiz:** `.gitignore:33:artifacts/` ignorava `src/FlowMapper.Execution/Artifacts/`. Os 9 arquivos de interface/record existiam no disco desde o sync inicial mas nunca foram commitados.
+- **Fixa:** Adicionado `!src/FlowMapper.Execution/Artifacts/` no `.gitignore`. Commitei os 9 arquivos.
+
+**Problema 2:** CI "Run Tests" demorava muito.
+- **Causa:** Workflow rodava `IntegrationTests` (Testcontainers com Docker — 15-30min) e `SnapshotTests`.
+- **Fixa:** Removi ambos do `ci-cd.yml`, deixando só `UnitTests` + `GeneratorTests`.
+
+**Problema 3:** NuGet publish falhou com NU5017 (pack de projetos sem conteúdo).
+- **Causa:** `dotnet pack FlowMapper.slnx` empacotava TODOS os projetos, incluindo `Analyzers`, `SourceGenerator`, samples e tests.
+- **Fixa:** Adicionei `<IsPackable>false</IsPackable>` nos `Directory.Build.props` de `samples/` e `tests/`, e diretamente em `Analyzers.csproj` e `SourceGenerator.csproj`.
+
+**Problema 4:** NuGet badge faltando.
+- **Fixa:** Adicionado badge no `README.md` e `README.nuget.md`.
+
+**Problema 5:** RepositoryUrl apontava para `anomalyco/FlowMapper` em vez de `pfabricio/FlowMapper`.
+- **Fixa:** Corrigido no `Directory.Build.props`.
+
+**v2.0.0 publicado no NuGet.** Tag criada e pushada. CI verde.
+
