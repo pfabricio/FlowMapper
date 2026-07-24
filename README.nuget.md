@@ -113,11 +113,7 @@ public class AppProfile : ProfileDefinition
 }
 
 // 2. Register
-services.AddFlowMapper(builder =>
-{
-    builder.AddProfile<AppProfile>();
-    builder.AddProvider<SqlServerProvider>("Server=...;");
-});
+services.AddFlowMapper();
 
 // 3. Inject and use
 public class MyService
@@ -238,7 +234,7 @@ var list = _flow.FromText<UserDto>(lines, TextDelimiter.Semicolon, hasHeader: fa
 
 ---
 
-## DI Registration
+## Advanced Configuration
 
 ```csharp
 services.AddFlowMapper(builder =>

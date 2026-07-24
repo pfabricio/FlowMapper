@@ -104,24 +104,10 @@ Requires .NET 8.0+
 ## Quick Start
 
 ```csharp
-// 1. Define a profile
-public class AppProfile : ProfileDefinition
-{
-    public AppProfile()
-    {
-        CreateMap<User, UserDto>()
-            .ForMember(d => d.FullName, opt => opt.MapFrom(s => $"{s.Name} ({s.Email})"));
-    }
-}
+// Register FlowMapper with defaults
+services.AddFlowMapper();
 
-// 2. Register
-services.AddFlowMapper(builder =>
-{
-    builder.AddProfile<AppProfile>();
-    builder.AddProvider<SqlServerProvider>("Server=...;");
-});
-
-// 3. Inject and use
+// Inject and use
 public class MyService
 {
     private readonly IFlowMapper _flow;
@@ -240,7 +226,7 @@ var list = _flow.FromText<UserDto>(lines, TextDelimiter.Semicolon, hasHeader: fa
 
 ---
 
-## DI Registration
+## Advanced Configuration
 
 ```csharp
 services.AddFlowMapper(builder =>

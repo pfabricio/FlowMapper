@@ -616,7 +616,15 @@ builder.AddProvider<OracleProvider>("Data Source=localhost:1521/MeuDb;User Id=us
 
 ## 9. DI Integration
 
-Registra todos os serviços automaticamente:
+Registra todos os serviços com configuração padrão:
+
+```csharp
+services.AddFlowMapper();
+```
+
+### Configuração Avançada
+
+Para personalizar provedores, perfis e opções:
 
 ```csharp
 services.AddFlowMapper(builder =>
