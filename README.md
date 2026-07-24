@@ -6,6 +6,8 @@
 
 It combines object-object mapping, micro-ORM, deserialization, source generation, and execution pipelines under a unified architecture focused on **performance**, **extensibility**, and **zero runtime reflection**.
 
+![FlowMapper Overview](images/Image%2023%20de%20jul.%20de%202026%2C%2016_52_15.png)
+
 ```csharp
 var dto = flow.Map<User, UserDto>(user);                    // Object → Object
 var rows = await flow.QueryAsync<CustomerDto>(sql);         // SQL → DTO
