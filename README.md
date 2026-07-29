@@ -63,7 +63,7 @@ var json = flow.FromJson<CustomerDto>(jsonString);           // JSON → DTO
 | ✅ **Execution Pipelines** | Middleware-based: `IPipelineBehavior` chain for cross-cutting concerns |
 | ✅ **Materialization Pipeline** | Caching, conversion, and null-handling middlewares |
 | ✅ **Validation Pipeline** | Rule-based validation with `IValidationRule` |
-| ✅ **Full-Text Search** | `SearchAsync<T>` with dialect-aware FTS condition injection across 4 providers |
+| ✅ **Full-Text Search** | `SearchFtsAsync<T>` with dialect-aware FTS condition injection across 4 providers |
 | ✅ **Runtime Diagnostics** | 6 built-in rules (FTS index, LIKE wildcard, ORDER BY index, SELECT *, large OFFSET, Cartesian JOIN) |
 | ✅ **Diagnostics Pipeline** | Event and middleware-based diagnostics with metrics |
 | ✅ **Schema Inspection** | Application-lifetime cache with `ISchemaInspector` for verifying FTS indexes against the database |
@@ -244,7 +244,7 @@ public class ProductFtsProfile : FtsProfileDefinition
 }
 
 // Search with automatic FTS condition injection
-var results = await _flow.SearchAsync<ProductDto>(
+var results = await _flow.SearchFtsAsync<ProductDto>(
     "SELECT Id, Name, Description FROM Products WHERE Price > 100 ORDER BY Name",
     "keyword", new[] { "Name", "Description" });
 // Injected SQL: SELECT Id, Name, Description FROM Products WHERE Price > 100
@@ -396,7 +396,7 @@ FlowMapper is part of a growing .NET ecosystem. The modular design allows each l
 - ✅ Compiler Pipeline with 13 optimization passes
 - ✅ Validation Pipeline
 - ✅ Execution Artifacts
-- ✅ Full-Text Search (`SearchAsync<T>`, 4 providers)
+- ✅ Full-Text Search (`SearchFtsAsync<T>`, 4 providers)
 - ✅ Runtime Diagnostics (6 built-in rules + SchemaInspector)
 - ✅ Diagnostic Telemetry (counters + OpenTelemetry event)
 - ✅ Source Generator FTS warnings (FM5001/FM5002)

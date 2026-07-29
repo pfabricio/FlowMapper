@@ -82,10 +82,10 @@ public class FakeDeserializer : IDeserializer
     public List<T> FromText<T>(string[] lines, TextDelimiter delimiter, bool hasHeader = true) => throw new NotSupportedException();
 }
 
-public class SearchAsyncTests
+public class SearchFtsAsyncTests
 {
     [Fact]
-    public async Task SearchAsync_WithoutWhere_InjectsFtsBeforeEnd()
+    public async Task SearchFtsAsync_WithoutWhere_InjectsFtsBeforeEnd()
     {
         var provider = new SpyDatabaseProvider();
         var rapid = new SpyRapidMapper();
@@ -97,7 +97,7 @@ public class SearchAsyncTests
             .BuildServiceProvider();
 
         var mapper = new FlowMapperService(services, rapid, new FakeDeserializer());
-        var result = await mapper.SearchAsync<object>("SELECT * FROM Produtos", "notebook", ["Nome"]);
+        var result = await mapper.SearchFtsAsync<object>("SELECT * FROM Produtos", "notebook", ["Nome"]);
 
         Assert.Contains("WHERE", rapid.LastSql);
         Assert.Contains(provider.DialectInstance.LastFtsCondition, rapid.LastSql);
@@ -105,7 +105,7 @@ public class SearchAsyncTests
     }
 
     [Fact]
-    public async Task SearchAsync_WithWhere_InjectsFtsAnd()
+    public async Task SearchFtsAsync_WithWhere_InjectsFtsAnd()
     {
         var provider = new SpyDatabaseProvider();
         var rapid = new SpyRapidMapper();
@@ -117,7 +117,7 @@ public class SearchAsyncTests
             .BuildServiceProvider();
 
         var mapper = new FlowMapperService(services, rapid, new FakeDeserializer());
-        var result = await mapper.SearchAsync<object>("SELECT * FROM Produtos WHERE Ativo = 1", "notebook", ["Nome"]);
+        var result = await mapper.SearchFtsAsync<object>("SELECT * FROM Produtos WHERE Ativo = 1", "notebook", ["Nome"]);
 
         Assert.Contains("AND", rapid.LastSql);
         Assert.Contains(provider.DialectInstance.LastFtsCondition, rapid.LastSql);
@@ -125,7 +125,7 @@ public class SearchAsyncTests
     }
 
     [Fact]
-    public async Task SearchAsync_WithWhereAndOrderBy_InjectsFtsBeforeOrderBy()
+    public async Task SearchFtsAsync_WithWhereAndOrderBy_InjectsFtsBeforeOrderBy()
     {
         var provider = new SpyDatabaseProvider();
         var rapid = new SpyRapidMapper();
@@ -137,7 +137,7 @@ public class SearchAsyncTests
             .BuildServiceProvider();
 
         var mapper = new FlowMapperService(services, rapid, new FakeDeserializer());
-        var result = await mapper.SearchAsync<object>("SELECT * FROM Produtos WHERE Ativo = 1 ORDER BY Nome", "notebook", ["Nome"]);
+        var result = await mapper.SearchFtsAsync<object>("SELECT * FROM Produtos WHERE Ativo = 1 ORDER BY Nome", "notebook", ["Nome"]);
 
         Assert.Contains("AND", rapid.LastSql);
         Assert.True(rapid.LastSql!.IndexOf("AND") < rapid.LastSql.IndexOf("ORDER BY"));
@@ -145,7 +145,7 @@ public class SearchAsyncTests
     }
 
     [Fact]
-    public async Task SearchAsync_PassesSearchTermAsParameter()
+    public async Task SearchFtsAsync_PassesSearchTermAsParameter()
     {
         var provider = new SpyDatabaseProvider();
         var rapid = new SpyRapidMapper();
@@ -157,14 +157,14 @@ public class SearchAsyncTests
             .BuildServiceProvider();
 
         var mapper = new FlowMapperService(services, rapid, new FakeDeserializer());
-        var result = await mapper.SearchAsync<object>("SELECT * FROM Produtos", "laptop dell", ["Nome"]);
+        var result = await mapper.SearchFtsAsync<object>("SELECT * FROM Produtos", "laptop dell", ["Nome"]);
 
         Assert.Equal("laptop dell", rapid.LastSearchTerm);
         Assert.Contains("@term", rapid.LastSql);
     }
 
     [Fact]
-    public async Task SearchAsync_CallsBuildFreeTextCondition()
+    public async Task SearchFtsAsync_CallsBuildFreeTextCondition()
     {
         var provider = new SpyDatabaseProvider();
         var rapid = new SpyRapidMapper();
@@ -176,13 +176,13 @@ public class SearchAsyncTests
             .BuildServiceProvider();
 
         var mapper = new FlowMapperService(services, rapid, new FakeDeserializer());
-        var result = await mapper.SearchAsync<object>("SELECT * FROM Produtos", "test", ["Nome", "Descricao"]);
+        var result = await mapper.SearchFtsAsync<object>("SELECT * FROM Produtos", "test", ["Nome", "Descricao"]);
 
         Assert.Equal("Nome, Descricao @@ @term", provider.DialectInstance.LastFtsCondition);
     }
 
     [Fact]
-    public async Task SearchAsync_ThrowsOnEmptySql()
+    public async Task SearchFtsAsync_ThrowsOnEmptySql()
     {
         var provider = new SpyDatabaseProvider();
         var rapid = new SpyRapidMapper();
@@ -191,11 +191,11 @@ public class SearchAsyncTests
             .BuildServiceProvider();
 
         var mapper = new FlowMapperService(services, rapid, new FakeDeserializer());
-        await Assert.ThrowsAsync<ArgumentException>(() => mapper.SearchAsync<object>("", "test", ["Nome"]));
+        await Assert.ThrowsAsync<ArgumentException>(() => mapper.SearchFtsAsync<object>("", "test", ["Nome"]));
     }
 
     [Fact]
-    public async Task SearchAsync_ThrowsOnEmptySearchTerm()
+    public async Task SearchFtsAsync_ThrowsOnEmptySearchTerm()
     {
         var provider = new SpyDatabaseProvider();
         var rapid = new SpyRapidMapper();
@@ -204,11 +204,11 @@ public class SearchAsyncTests
             .BuildServiceProvider();
 
         var mapper = new FlowMapperService(services, rapid, new FakeDeserializer());
-        await Assert.ThrowsAsync<ArgumentException>(() => mapper.SearchAsync<object>("SELECT * FROM T", "", ["Nome"]));
+        await Assert.ThrowsAsync<ArgumentException>(() => mapper.SearchFtsAsync<object>("SELECT * FROM T", "", ["Nome"]));
     }
 
     [Fact]
-    public async Task SearchAsync_ThrowsOnNullColumns()
+    public async Task SearchFtsAsync_ThrowsOnNullColumns()
     {
         var provider = new SpyDatabaseProvider();
         var rapid = new SpyRapidMapper();
@@ -217,11 +217,11 @@ public class SearchAsyncTests
             .BuildServiceProvider();
 
         var mapper = new FlowMapperService(services, rapid, new FakeDeserializer());
-        await Assert.ThrowsAsync<ArgumentException>(() => mapper.SearchAsync<object>("SELECT * FROM T", "test", null!));
+        await Assert.ThrowsAsync<ArgumentException>(() => mapper.SearchFtsAsync<object>("SELECT * FROM T", "test", null!));
     }
 
     [Fact]
-    public async Task SearchAsync_ThrowsOnEmptyColumns()
+    public async Task SearchFtsAsync_ThrowsOnEmptyColumns()
     {
         var provider = new SpyDatabaseProvider();
         var rapid = new SpyRapidMapper();
@@ -230,6 +230,6 @@ public class SearchAsyncTests
             .BuildServiceProvider();
 
         var mapper = new FlowMapperService(services, rapid, new FakeDeserializer());
-        await Assert.ThrowsAsync<ArgumentException>(() => mapper.SearchAsync<object>("SELECT * FROM T", "test", []));
+        await Assert.ThrowsAsync<ArgumentException>(() => mapper.SearchFtsAsync<object>("SELECT * FROM T", "test", []));
     }
 }

@@ -231,9 +231,9 @@ Criar DTOs internos no SG em vez de referenciar `FlowMapper.Core` direto. Isso d
 - Adicionar `BuildFreeTextCondition()`, `BuildContainsCondition()`, `BuildRankOrderBy()`, `VerifyFtsIndexSql()`, `FtsRequiresIndex`, `FtsSupportsLanguage`
 - Implementar em SQL Server, PostgreSQL, MySQL, Oracle
 
-**Fase 3 — SqlBuilder + SearchAsync**
+**Fase 3 — SqlBuilder + SearchFtsAsync**
 - `SqlBuilder.FreeText()`, `.Contains()`, `.OrderByRank()`
-- `IFlowMapper.SearchAsync<T>()` + `FtsQueryBuilder<T>`
+- `IFlowMapper.SearchFtsAsync<T>()` + `FtsQueryBuilder<T>`
 
 **Fase 4 — IDiagnosticRule + DiagnosticBehavior**
 - Criar `FlowMapper.Diagnostics` projeto
@@ -260,7 +260,7 @@ Criar DTOs internos no SG em vez de referenciar `FlowMapper.Core` direto. Isso d
 
 ### Mudanças na SPEC
 - **SqlBuilder removido** do FTS — permanece inalterado, sem métodos FTS
-- **SearchAsync<T>(sql, term, columns)** — API única, SQL raw + string[] columns, sem expression trees. Injeção automática da condição FTS no SQL (detecta WHERE, ORDER BY, LIMIT, OFFSET)
+- **SearchFtsAsync<T>(sql, term, columns)** — API única, SQL raw + string[] columns, sem expression trees. Injeção automática da condição FTS no SQL (detecta WHERE, ORDER BY, LIMIT, OFFSET)
 - **DiagnosticEngine** — núcleo de observabilidade, desacoplado do pipeline
 - **DiagnosticBehavior** — adaptador IPipelineBehavior (~5 linhas), delega pro Engine
 - **Language exclusiva do provider** — removida dos métodos IDialect
@@ -270,7 +270,7 @@ Criar DTOs internos no SG em vez de referenciar `FlowMapper.Core` direto. Isso d
 |------|------|----------|
 | 1 | FtsIndexState + IFullTextIndexRegistry | FlowMapper.FullTextSearch (novo) |
 | 2 | IDialect FTS Methods | Providers (SQL Server, PostgreSQL, MySQL, Oracle) |
-| 3 | SearchAsync (SQL raw) | FlowMapper.FullTextSearch, Abstractions, Runtime |
+| 3 | SearchFtsAsync (SQL raw) | FlowMapper.FullTextSearch, Abstractions, Runtime |
 | 4 | DiagnosticEngine + DiagnosticBehavior | FlowMapper.Diagnostics (novo) |
 | 5 | Schema Inspection + Cache | FlowMapper.Diagnostics, Providers |
 | 6 | Telemetria | FlowMapper.Diagnostics |

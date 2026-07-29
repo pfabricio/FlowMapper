@@ -120,7 +120,7 @@ services.AddFlowMapper(builder =>
 | ✅ **Execution Pipelines** | Middleware-based `IPipelineBehavior` chain for cross-cutting concerns |
 | ✅ **Materialization Pipeline** | Caching, conversion, and null-handling middlewares |
 | ✅ **Validation Pipeline** | Rule-based validation with `IValidationRule` |
-| ✅ **Full-Text Search** | `SearchAsync<T>` with automatic FTS condition injection across all 4 providers |
+| ✅ **Full-Text Search** | `SearchFtsAsync<T>` with automatic FTS condition injection across all 4 providers |
 | ✅ **Runtime Diagnostics** | 6 built-in rules (FTS index, LIKE wildcard, ORDER BY index, SELECT *, large OFFSET, cartesian JOIN) |
 | ✅ **Diagnostics Pipeline** | Event and middleware-based diagnostics with metrics |
 | ✅ **Schema Inspection** | Application-lifetime cache with `ISchemaInspector` for verifying FTS indexes in the database |
@@ -177,7 +177,7 @@ src/
 ├── FlowMapper.Compiler/                 # Compilation pipeline with 13 optimization passes
 ├── FlowMapper.Runtime/                  # Runtime implementations (query, command, stream executors)
 ├── FlowMapper.Deserialization/          # JSON, XML, TXT deserialization
-├── FlowMapper.FullTextSearch/           # Full-text search engine (SearchAsync, FtsSqlInjector)
+├── FlowMapper.FullTextSearch/           # Full-text search engine (SearchFtsAsync, FtsSqlInjector)
 ├── FlowMapper.FullTextSearch.Abstractions/ # FTS abstractions (IFullTextIndexRegistry, FtsIndexState)
 ├── FlowMapper.Diagnostics/              # Diagnostics pipeline with middlewares
 ├── FlowMapper.Validation/               # Rule-based validation pipeline
@@ -1070,7 +1070,7 @@ FlowMapper is part of a growing .NET ecosystem. The modular design allows each l
 ### Version 2.1
 - ✅ Plugin SDK
 - ✅ Compiler Pipeline with 13 optimization passes
-- ✅ Full-Text Search (`SearchAsync<T>` across all 4 providers)
+- ✅ Full-Text Search (`SearchFtsAsync<T>` across all 4 providers)
 - ✅ Runtime Diagnostics (6 built-in rules)
 - ✅ Diagnostics Pipeline
 - ✅ Validation Pipeline

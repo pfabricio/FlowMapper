@@ -71,7 +71,7 @@ public class FlowMapperService : IFlowMapper
     public List<T> FromText<T>(string[] lines, TextDelimiter delimiter, bool hasHeader = true)
         => _deserializer.FromText<T>(lines, delimiter, hasHeader);
 
-    public async Task<IEnumerable<T>> SearchAsync<T>(string sql, string searchTerm, string[] columns, CancellationToken ct = default)
+    public async Task<IEnumerable<T>> SearchFtsAsync<T>(string sql, string searchTerm, string[] columns, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(sql))
             throw new ArgumentException("SQL cannot be null or empty.", nameof(sql));
