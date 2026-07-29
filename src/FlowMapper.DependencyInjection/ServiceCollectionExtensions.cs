@@ -3,6 +3,8 @@ using FlowMapper.Compiler;
 using FlowMapper.Core;
 using FlowMapper.Deserialization;
 using FlowMapper.Diagnostics;
+using FlowMapper.Diagnostics.Rules;
+using FlowMapper.FullTextSearch;
 using FlowMapper.Materializer;
 using FlowMapper.Providers.Abstractions;
 using FlowMapper.Runtime;
@@ -28,6 +30,8 @@ public static class ServiceCollectionExtensions
         RegisterDataAccess(services, options.Data);
         RegisterObjectMapping(services);
         RegisterCore(services);
+        RegisterFullTextSearch(services);
+        RegisterDiagnostics(services);
 
         return services;
     }
@@ -74,5 +78,32 @@ public static class ServiceCollectionExtensions
     {
         services.TryAddSingleton<FlowBuilder>();
         services.TryAddSingleton<Compiler.ICompiler, Compiler.Compiler>();
+    }
+
+    private static void RegisterFullTextSearch(IServiceCollection services)
+    {
+        services.TryAddSingleton<IFullTextIndexRegistry>(sp =>
+        {
+            var registries = sp.GetServices<IFullTextIndexRegistry>();
+            return registries.FirstOrDefault() ?? new FullTextIndexRegistry();
+        });
+    }
+
+    private static void RegisterDiagnostics(IServiceCollection services)
+    {
+        services.TryAddSingleton<IDiagnosticTelemetry, DiagnosticTelemetry>();
+        services.TryAddSingleton<IDiagnosticCollector, DiagnosticCollector>();
+        services.TryAddSingleton<DiagnosticEngine>();
+        services.AddSingleton<IPipelineBehavior, DiagnosticBehavior>();
+
+        services.TryAddSingleton<ISchemaInspector, SchemaInspector>();
+        services.TryAddSingleton<FlowMapperDiagnosticsOptions>();
+
+        services.AddSingleton<IDiagnosticRule, FullTextIndexRule>();
+        services.AddSingleton<IDiagnosticRule, LikeWildcardRule>();
+        services.AddSingleton<IDiagnosticRule, OrderByIndexRule>();
+        services.AddSingleton<IDiagnosticRule, SelectStarRule>();
+        services.AddSingleton<IDiagnosticRule, LargeOffsetRule>();
+        services.AddSingleton<IDiagnosticRule, CartesianJoinRule>();
     }
 }

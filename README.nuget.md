@@ -61,7 +61,12 @@ var json = flow.FromJson<CustomerDto>(jsonString);           // JSON → DTO
 | ✅ **Execution Pipelines** | Middleware-based: `IPipelineBehavior` chain for cross-cutting concerns |
 | ✅ **Materialization Pipeline** | Caching, conversion, and null-handling middlewares |
 | ✅ **Validation Pipeline** | Rule-based validation with `IValidationRule` |
+| ✅ **Full-Text Search** | `SearchAsync<T>` with dialect-aware FTS condition injection across 4 providers |
+| ✅ **Runtime Diagnostics** | 6 built-in rules (FTS index, LIKE wildcard, ORDER BY index, SELECT *, large OFFSET, Cartesian JOIN) |
 | ✅ **Diagnostics Pipeline** | Event and middleware-based diagnostics with metrics |
+| ✅ **Schema Inspection** | Application-lifetime cache with `ISchemaInspector` for verifying FTS indexes against the database |
+| ✅ **Diagnostic Telemetry** | Per-code counters and `OnDiagnostic` event for OpenTelemetry integration |
+| ✅ **Compile-time FTS Analysis** | Source generator emits FM5001/FM5002 warnings for misconfigured FTS profiles |
 | ✅ **Compiler Pipeline** | 13 optimization passes (flatten, fusion, constant eval, dead metadata elimination) |
 | ✅ **Plugin SDK** | Extend everything: providers, stages, passes, rules, generators |
 | ✅ **Deserialization** | JSON, XML, TXT/CSV — all with nested DTO support |
@@ -92,7 +97,7 @@ var json = flow.FromJson<CustomerDto>(jsonString);           // JSON → DTO
 ## Installation
 
 ```xml
-<PackageReference Include="FlowMapper" Version="2.0.0" />
+<PackageReference Include="FlowMapper" Version="2.1.0" />
 ```
 
 Requires .NET 8.0+
@@ -216,6 +221,31 @@ var xml = """<CustomerDto><Id>1</Id><Name>Peter</Name><Profile><Id>10</Id><Name>
 var dto = _flow.FromXml<CustomerDto>(xml);
 ```
 
+### Full-Text Search
+
+```csharp
+// Register FTS profile
+public class ProductFtsProfile : FtsProfileDefinition
+{
+    public ProductFtsProfile()
+    {
+        Entity<Product>().HasFullTextIndex(p => p.Name);
+    }
+}
+
+// Search with automatic FTS condition injection
+var results = await _flow.SearchAsync<ProductDto>(
+    "SELECT Id, Name FROM Products WHERE Price > 100 ORDER BY Name",
+    "keyword", new[] { "Name" });
+```
+
+### Runtime Diagnostics
+
+```csharp
+var telemetry = sp.GetRequiredService<IDiagnosticTelemetry>();
+telemetry.OnDiagnostic += d => Console.WriteLine($"{d.Code}: {d.Message}");
+```
+
 ### TXT → DTO (Flat)
 
 **With header** — matches column names to property names (case-insensitive):
@@ -281,9 +311,10 @@ var flow = sp.GetRequiredService<IFlowMapper>();
 | `FlowMapper.Providers.*` | Database providers (SQL Server, PostgreSQL, MySQL, Oracle) |
 | `FlowMapper.SourceGenerator` | Incremental source generator for compile-time mapper stubs |
 | `FlowMapper.Compiler` | Compilation pipeline with 13 optimization passes |
+| `FlowMapper.FullTextSearch` | FTS condition injection, `IFullTextIndexRegistry`, `FtsProfileDefinition` |
 | `FlowMapper.Mapping` | Object-object mapping pipeline with middlewares |
 | `FlowMapper.Validation` | Rule-based validation pipeline |
-| `FlowMapper.Diagnostics` | Event and middleware-based diagnostics |
+| `FlowMapper.Diagnostics` | `DiagnosticEngine`, `SchemaInspector`, 6 rules, `IDiagnosticTelemetry` |
 | `FlowMapper.SqlCompiler` | SQL compilation pipeline with dialect middlewares |
 | `FlowMapper.PluginSdk` | Plugin system with 7 marker interfaces |
 | `FlowMapper` | Umbrella meta-package |

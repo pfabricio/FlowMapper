@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" />
+    <ProjectReference Include="..\FlowMapper.FullTextSearch\FlowMapper.FullTextSearch.csproj" />
   </ItemGroup>
 </Project>
 

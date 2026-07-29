@@ -563,4 +563,151 @@ public class GeneratorTests
         Assert.Empty(diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error));
         Assert.Contains("var target = new Output(source.Value * 2);", generated);
     }
+
+    [Fact]
+    public void FtsProfile_NonStringProperty_EmitsFM5002()
+    {
+        var source = """
+            using FlowMapper.FullTextSearch;
+
+            public class MyFtsProfile : FtsProfileDefinition
+            {
+                public MyFtsProfile()
+                {
+                    Entity<Product>()
+                        .HasFullTextIndex(p => p.Name)
+                        .HasFullTextIndex(p => p.Price);
+                }
+            }
+
+            public class Product
+            {
+                public string Name { get; set; } = "";
+                public decimal Price { get; set; }
+            }
+            """;
+
+        var (diagnostics, generated) = GeneratorTestHelper.RunGenerator(source);
+
+        var fm5002 = diagnostics.Where(d => d.Id == "FM5002").ToList();
+        Assert.Single(fm5002);
+        Assert.Contains("Price", fm5002[0].GetMessage());
+    }
+
+    [Fact]
+    public void FtsProfile_AllStringProperties_NoFM5002()
+    {
+        var source = """
+            using FlowMapper.FullTextSearch;
+
+            public class MyFtsProfile : FtsProfileDefinition
+            {
+                public MyFtsProfile()
+                {
+                    Entity<Product>()
+                        .HasFullTextIndex(p => p.Name)
+                        .HasFullTextIndex(p => p.Description);
+                }
+            }
+
+            public class Product
+            {
+                public string Name { get; set; } = "";
+                public string Description { get; set; } = "";
+            }
+            """;
+
+        var (diagnostics, generated) = GeneratorTestHelper.RunGenerator(source);
+
+        Assert.Empty(diagnostics.Where(d => d.Id == "FM5002"));
+    }
+
+    [Fact]
+    public void FtsProfile_MissingStringProperty_EmitsFM5001()
+    {
+        var source = """
+            using FlowMapper.FullTextSearch;
+
+            public class MyFtsProfile : FtsProfileDefinition
+            {
+                public MyFtsProfile()
+                {
+                    Entity<Product>()
+                        .HasFullTextIndex(p => p.Name);
+                }
+            }
+
+            public class Product
+            {
+                public string Name { get; set; } = "";
+                public string Description { get; set; } = "";
+            }
+            """;
+
+        var (diagnostics, generated) = GeneratorTestHelper.RunGenerator(source);
+
+        var fm5001 = diagnostics.Where(d => d.Id == "FM5001").ToList();
+        Assert.Single(fm5001);
+        Assert.Contains("Description", fm5001[0].GetMessage());
+    }
+
+    [Fact]
+    public void FtsProfile_AllStringPropertiesConfigured_NoFM5001()
+    {
+        var source = """
+            using FlowMapper.FullTextSearch;
+
+            public class MyFtsProfile : FtsProfileDefinition
+            {
+                public MyFtsProfile()
+                {
+                    Entity<Product>()
+                        .HasFullTextIndex(p => p.Name)
+                        .HasFullTextIndex(p => p.Description);
+                }
+            }
+
+            public class Product
+            {
+                public string Name { get; set; } = "";
+                public string Description { get; set; } = "";
+            }
+            """;
+
+        var (diagnostics, generated) = GeneratorTestHelper.RunGenerator(source);
+
+        Assert.Empty(diagnostics.Where(d => d.Id == "FM5001"));
+    }
+
+    [Fact]
+    public void FtsProfile_BothDiagnostics_EmitsBoth()
+    {
+        var source = """
+            using FlowMapper.FullTextSearch;
+
+            public class MyFtsProfile : FtsProfileDefinition
+            {
+                public MyFtsProfile()
+                {
+                    Entity<Product>()
+                        .HasFullTextIndex(p => p.Name);
+                }
+            }
+
+            public class Product
+            {
+                public string Name { get; set; } = "";
+                public decimal Price { get; set; }
+                public string Description { get; set; } = "";
+            }
+            """;
+
+        var (diagnostics, generated) = GeneratorTestHelper.RunGenerator(source);
+
+        var fm5001 = diagnostics.Where(d => d.Id == "FM5001").ToList();
+        var fm5002 = diagnostics.Where(d => d.Id == "FM5002").ToList();
+
+        Assert.Contains(fm5001, d => d.GetMessage().Contains("Description"));
+        Assert.Empty(fm5002);
+    }
 }

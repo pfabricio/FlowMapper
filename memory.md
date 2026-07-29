@@ -211,3 +211,161 @@ Criar DTOs internos no SG em vez de referenciar `FlowMapper.Core` direto. Isso d
 
 **v2.0.0 publicado no NuGet.** Tag criada e pushada. CI verde.
 
+
+## 2026-07-29 03:57:23 UTC
+## 2026-07-29 — SPEC-216 FTS + Diagnostics planejado
+
+### SPEC criada
+`Specs/SPEC-216-Full-Text-Search-and-Diagnostics.md` — Full Text Search + Runtime Diagnostics + Telemetria + Source Generator.
+
+### Pendências (7 fases)
+
+**Fase 1 — FtsIndexState + IFullTextIndexRegistry**
+- Criar `FlowMapper.FullTextSearch` projeto
+- `FtsIndexState` enum (Configured, Verified, Missing, Unknown)
+- `IFullTextIndexRegistry` / `FullTextIndexRegistry`
+- `FtsProfileDefinition` + `FtsEntityBuilder<T>`
+- `FlowMapperBuilder.AddFtsProfile<T>()`
+
+**Fase 2 — IDialect FTS Methods**
+- Adicionar `BuildFreeTextCondition()`, `BuildContainsCondition()`, `BuildRankOrderBy()`, `VerifyFtsIndexSql()`, `FtsRequiresIndex`, `FtsSupportsLanguage`
+- Implementar em SQL Server, PostgreSQL, MySQL, Oracle
+
+**Fase 3 — SqlBuilder + SearchAsync**
+- `SqlBuilder.FreeText()`, `.Contains()`, `.OrderByRank()`
+- `IFlowMapper.SearchAsync<T>()` + `FtsQueryBuilder<T>`
+
+**Fase 4 — IDiagnosticRule + DiagnosticBehavior**
+- Criar `FlowMapper.Diagnostics` projeto
+- `IDiagnosticRule`, `QueryContext`, `IDiagnosticCollector`
+- `DiagnosticBehavior` (IPipelineBehavior)
+- Regras built-in: FullTextIndexRule, LikeWildcardRule, OrderByIndexRule, SelectStarRule, LargeOffsetRule, CartesianJoinRule
+
+**Fase 5 — Schema Inspection + Cache**
+- `IDialect.VerifyFtsIndexSql()` por provider
+- `SchemaInspector` com cache application lifetime
+- `FlowMapperDiagnosticsOptions.EnableSchemaInspection` (default: false)
+
+**Fase 6 — Telemetria**
+- `IDiagnosticTelemetry` com contadores por código
+- Evento `OnDiagnostic` para OpenTelemetry
+
+**Fase 7 — Source Generator (compile-time)**
+- FM5001: propriedade não configurada como FTS
+- FM5002: coluna incompatível configurada como FTS
+
+
+## 2026-07-29 16:15:02 UTC
+## 2026-07-29 — SPEC-216 atualizada (revisão final)
+
+### Mudanças na SPEC
+- **SqlBuilder removido** do FTS — permanece inalterado, sem métodos FTS
+- **SearchAsync<T>(sql, term, columns)** — API única, SQL raw + string[] columns, sem expression trees. Injeção automática da condição FTS no SQL (detecta WHERE, ORDER BY, LIMIT, OFFSET)
+- **DiagnosticEngine** — núcleo de observabilidade, desacoplado do pipeline
+- **DiagnosticBehavior** — adaptador IPipelineBehavior (~5 linhas), delega pro Engine
+- **Language exclusiva do provider** — removida dos métodos IDialect
+
+### Fases atualizadas
+| Fase | Nome | Projetos |
+|------|------|----------|
+| 1 | FtsIndexState + IFullTextIndexRegistry | FlowMapper.FullTextSearch (novo) |
+| 2 | IDialect FTS Methods | Providers (SQL Server, PostgreSQL, MySQL, Oracle) |
+| 3 | SearchAsync (SQL raw) | FlowMapper.FullTextSearch, Abstractions, Runtime |
+| 4 | DiagnosticEngine + DiagnosticBehavior | FlowMapper.Diagnostics (novo) |
+| 5 | Schema Inspection + Cache | FlowMapper.Diagnostics, Providers |
+| 6 | Telemetria | FlowMapper.Diagnostics |
+| 7 | Source Generator (compile-time) | FlowMapper.SourceGenerator |
+
+
+## 2026-07-29 17:00:17 UTC
+## Fase 4 — DiagnosticEngine Implementation (Completed)
+- Created types in `FlowMapper.Diagnostics`: `Diagnostic` (record), `DiagnosticSeverity`, `DiagnosticSource`, `QueryContext`, `IDiagnosticRule`, `IDiagnosticCollector`
+- `DiagnosticEngine` — iterates rules and emits diagnostics via collector
+- `DiagnosticCollector` — thread-safe collector with `HasErrors`/`Diagnostics`
+- `DiagnosticBehavior` — `IPipelineBehavior` that builds `QueryContext` and runs engine
+- 6 rules:
+  - `FullTextIndexRule` (FM1001) — consults `IFullTextIndexRegistry` via DI
+  - `LikeWildcardRule` (FM3002) — detects leading wildcard LIKE
+  - `OrderByIndexRule` (FM3003) — warns on ORDER BY without index
+  - `SelectStarRule` (FM3005) — warns on SELECT *
+  - `LargeOffsetRule` (FM3006) — warns on OFFSET >1000 without WHERE
+  - `CartesianJoinRule` (FM3007) — detects JOIN without ON
+- `PipelineExecutor` modified to chain `IPipelineBehavior` via recursive `ExecuteChain()` for `QueryAsync` and `ExecuteAsync` (StreamAsync remains direct)
+- Registration in `ServiceCollectionExtensions.RegisterDiagnostics()`: collector, engine, behavior, all 6 rules
+- Note: `DiagnosticSeverity` already existed in `FlowMapper.Diagnostics` namespace (in `DiagnosticsService.cs`), so all diagnostic types kept in that namespace, not in Abstractions
+- Build: 0 errors, 131 unit tests passed
+
+## 2026-07-29 17:14:28 UTC
+## Fase 5 — Schema Inspection + Cache (Completed)
+
+### Created
+- `src/FlowMapper.Diagnostics/FlowMapperDiagnosticsOptions.cs` — `EnableSchemaInspection` (default: false)
+- `src/FlowMapper.Diagnostics/ISchemaInspector.cs` — interface: `VerifyIndex(table, column, provider)`, `ClearCache()`
+- `src/FlowMapper.Diagnostics/SchemaInspector.cs` — sync ADO.NET `ExecuteScalar()` via `IDatabaseProvider`, `ConcurrentDictionary` cache keyed by `(Table, Column, Provider)`, returns `Verified`/`Missing`/`Unknown`; handles null SQL (Unknown) and exceptions (Unknown); `ClearCache()`
+
+### Modified
+- `src/FlowMapper.Diagnostics/Rules/FullTextIndexRule.cs` — dual constructor (single-param for backward compat, 3-param for DI); when `EnableSchemaInspection=true`, calls `SchemaInspector.VerifyIndex()` instead of `_registry.GetState()`; emits `Warning` for `Missing`, `Info` for `Verified`/`Configured`; includes `FtsIndexErrorMessage` on missing
+- `src/FlowMapper.DependencyInjection/ServiceCollectionExtensions.cs` — `RegisterDiagnostics()` registers `ISchemaInspector` (singleton) and `FlowMapperDiagnosticsOptions` (singleton)
+
+### Tests Added (11 new, 190 total)
+- `tests/FlowMapper.UnitTests/Diagnostics/SchemaInspectorTests.cs` — 7 tests: null SQL, result not null, result null, exception, caching, different provider isolation, ClearCache
+- `tests/FlowMapper.UnitTests/Diagnostics/FullTextIndexRuleTests.cs` — 4 new tests: schema inspection Verified (Info), Missing (Warning), Unknown (no emit), inspection disabled (uses registry)
+
+### Status
+**Build: 0 errors, 0 warnings (pre-existing warnings only). Tests: 190/190 passed.**
+
+
+## 2026-07-29 17:19:10 UTC
+## Fase 6 — Telemetria (Completed)
+
+### Created
+- `src/FlowMapper.Diagnostics/IDiagnosticTelemetry.cs` — interface: `Record(diagnostic)`, `GetCount(code)`, `GetAllCounts()`, `OnDiagnostic` event, `Reset()`
+- `src/FlowMapper.Diagnostics/DiagnosticTelemetry.cs` — `ConcurrentDictionary<string,int>` counters, `OnDiagnostic` event for OpenTelemetry integration, thread-safe
+
+### Modified
+- `src/FlowMapper.Diagnostics/DiagnosticCollector.cs` — dual constructor (parameterless + `IDiagnosticTelemetry`); `Emit()` calls `_telemetry?.Record(diagnostic)` after storage
+- `src/FlowMapper.DependencyInjection/ServiceCollectionExtensions.cs` — `RegisterDiagnostics()` registers `IDiagnosticTelemetry` (singleton) before collector
+
+### Tests Added (10 new, 200 total)
+- `tests/FlowMapper.UnitTests/Diagnostics/DiagnosticTelemetryTests.cs` — 8 tests: increment, accumulate, separate codes, unknown code zero, GetAllCounts snapshot, Reset, OnDiagnostic event, multiple subscribers
+- `tests/FlowMapper.UnitTests/Diagnostics/DiagnosticCollectorTests.cs` — 2 tests: Emit invokes telemetry Record, Emit fires OnDiagnostic
+
+### Status
+**Build: 0 errors. Tests: 200/200 passed.**
+
+
+## 2026-07-29 17:30:07 UTC
+## Fase 7 — Source Generator (compile-time diagnostics) (Completed)
+
+### Modified
+- `src/FlowMapper.SourceGenerator/FlowMapperGenerator.cs` — Added second incremental pipeline for `FtsProfileDefinition` detection:
+  - `IsFtsCandidate()` — string-matches `FtsProfileDefinition` in base types
+  - `TransformFtsCandidate()` — two-pass parsing: first pass collects `Entity<T>()` calls, second pass processes `HasFullTextIndex()` calls with the resolved entity type
+  - `ResolvePropertyTypeInfo()` — resolves property type from entity type symbol (`GetMembers(propName)`) with fallback to semantic model
+  - `AnalyzeFtsProfile()` — emits FM5001 for unconfigured `string` properties, FM5002 for non-string `HasFullTextIndex` columns
+  - `GenerateCode()` — collects FTS profiles, runs analysis, then continues with mapper generation
+- `tests/FlowMapper.Generator.Tests/GeneratorTestHelper.cs` — added `FlowMapper.FullTextSearch` metadata reference
+- `tests/FlowMapper.Generator.Tests/FlowMapper.Generator.Tests.csproj` — added `FlowMapper.FullTextSearch` project reference
+
+### Diagnostics Added
+- **FM5001** — Warns when a `string` property on an entity used in `FtsProfileDefinition.Entity<T>()` is not configured with `HasFullTextIndex`
+- **FM5002** — Warns when `HasFullTextIndex()` is called on a non-string property (e.g., `decimal`, `int`)
+
+### Key design decisions
+- Two-pass invocation parsing avoids depth-first ordering issue with fluent chains
+- Property type resolved from `INamedTypeSymbol.GetMembers()` (reliable) with fallback to `SemanticModel.GetTypeInfo()`
+- Types that cannot be resolved (`TypeUnresolved`) skip FM5002 to avoid false positives
+
+### Tests Added (5 new, 219 total across all test projects)
+- `GeneratorTests.FtsProfile_NonStringProperty_EmitsFM5002`
+- `GeneratorTests.FtsProfile_AllStringProperties_NoFM5002`
+- `GeneratorTests.FtsProfile_MissingStringProperty_EmitsFM5001`
+- `GeneratorTests.FtsProfile_AllStringPropertiesConfigured_NoFM5001`
+- `GeneratorTests.FtsProfile_BothDiagnostics_EmitsBoth`
+
+### Status
+**Build: 0 errors. Tests: 219/219 passed** (200 UnitTests + 19 GeneratorTests + 1 skipped snapshot test).
+
+
+## 2026-07-29 17:35:36 UTC
+Updated both Docs/README.md and Docs/README.en.md with v2.1.0 changes: version bump, benefits table (FTS, Diagnostics, Schema Inspection, Telemetry, Compile-time FTS Analysis added), project structure (FlowMapper.FullTextSearch, FlowMapper.FullTextSearch.Abstractions), and roadmap v2.1 expanded with FTS + Diagnostics + Telemetry + SG items. Both files now reflect 2.1.0.

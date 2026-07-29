@@ -19,5 +19,6 @@
     <ProjectReference Include="..\..\src\FlowMapper.SourceGenerator\FlowMapper.SourceGenerator.csproj" />
     <ProjectReference Include="..\..\src\FlowMapper.Core\FlowMapper.Core.csproj" />
     <ProjectReference Include="..\..\src\FlowMapper.Abstractions\FlowMapper.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\FlowMapper.FullTextSearch\FlowMapper.FullTextSearch.csproj" />
   </ItemGroup>
 </Project>

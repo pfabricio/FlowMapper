@@ -61,6 +61,7 @@ internal static class GeneratorTestHelper
             (typeof(Microsoft.CSharp.RuntimeBinder.RuntimeBinderException).Assembly, false),
             (typeof(FlowMapper.Abstractions.MapAttribute<,>).Assembly, true),
             (typeof(FlowMapper.Core.Flow).Assembly, true),
+            (typeof(FlowMapper.FullTextSearch.FtsProfileDefinition).Assembly, true),
         };
 
         foreach (var (asm, required) in assemblyTypes)

@@ -19,5 +19,7 @@ public interface IFlowMapper
     T FromXml<T>(string xml);
     List<T> FromText<T>(string[] lines, TextDelimiter delimiter, bool hasHeader = true);
 
+    Task<IEnumerable<T>> SearchAsync<T>(string sql, string searchTerm, string[] columns, CancellationToken ct = default);
+
     IExecutionScope CreateScope(bool transactional = false);
 }

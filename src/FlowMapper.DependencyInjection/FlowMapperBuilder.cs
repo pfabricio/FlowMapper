@@ -1,5 +1,6 @@
 using FlowMapper.Abstractions;
 using FlowMapper.Core;
+using FlowMapper.FullTextSearch;
 using FlowMapper.Providers.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,6 +37,15 @@ public class FlowMapperBuilder
     {
         _services.AddSingleton<TProfile>();
         _services.AddSingleton(sp => (ProfileDefinition)sp.GetRequiredService<TProfile>());
+        return this;
+    }
+
+    public FlowMapperBuilder AddFtsProfile<TProfile>()
+        where TProfile : FtsProfileDefinition, new()
+    {
+        var profile = new TProfile();
+        _services.AddSingleton(profile.Registry);
+        _services.AddSingleton<IFullTextIndexRegistry>(profile.Registry);
         return this;
     }
 

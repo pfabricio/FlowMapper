@@ -120,7 +120,12 @@ services.AddFlowMapper(builder =>
 | ✅ **Execution Pipelines** | Cadeia de middlewares `IPipelineBehavior` para concerns transversais |
 | ✅ **Materialization Pipeline** | Middlewares de cache, conversão e tratamento de null |
 | ✅ **Validation Pipeline** | Validação baseada em regras com `IValidationRule` |
+| ✅ **Full-Text Search** | `SearchAsync<T>` com injeção automática de condição FTS nos 4 provedores |
+| ✅ **Runtime Diagnostics** | 6 regras built-in (índice FTS, LIKE wildcard, ORDER BY index, SELECT *, OFFSET grande, JOIN cartesiano) |
 | ✅ **Diagnostics Pipeline** | Diagnóstico baseado em eventos e middlewares com métricas |
+| ✅ **Schema Inspection** | Cache application-lifetime com `ISchemaInspector` para verificar índices FTS no banco |
+| ✅ **Diagnostic Telemetry** | Contadores por código e evento `OnDiagnostic` para OpenTelemetry |
+| ✅ **Compile-time FTS Analysis** | Source generator emite warnings FM5001/FM5002 para perfis FTS mal configurados |
 | ✅ **Compiler Pipeline** | 13 passes de otimização (flatten, fusão, constant eval, dead metadata) |
 | ✅ **Plugin SDK** | Extenda tudo: provedores, estágios, passes, regras, geradores |
 | ✅ **Deserialização** | JSON, XML, TXT/CSV — todos com suporte a DTOs aninhados |
@@ -151,7 +156,7 @@ services.AddFlowMapper(builder =>
 Adicione o pacote NuGet:
 
 ```xml
-<PackageReference Include="FlowMapper" Version="2.0.0" />
+<PackageReference Include="FlowMapper" Version="2.1.0" />
 ```
 
 **Pré-requisitos:** .NET 8.0+
@@ -172,6 +177,8 @@ src/
 ├── FlowMapper.Compiler/                 # Pipeline de compilação com 13 passes de otimização
 ├── FlowMapper.Runtime/                  # Implementações runtime (query, command, stream executors)
 ├── FlowMapper.Deserialization/          # Deserialização JSON, XML, TXT
+├── FlowMapper.FullTextSearch/           # Motor de busca textual (SearchAsync, FtsSqlInjector)
+├── FlowMapper.FullTextSearch.Abstractions/ # Abstrações FTS (IFullTextIndexRegistry, FtsIndexState)
 ├── FlowMapper.Diagnostics/              # Pipeline de diagnósticos com middlewares
 ├── FlowMapper.Validation/               # Pipeline de validação baseada em regras
 ├── FlowMapper.SqlCompiler/              # Pipeline de compilação SQL com middlewares
@@ -1063,9 +1070,14 @@ FlowMapper faz parte de um ecossistema .NET em crescimento. O design modular per
 ### Versão 2.1
 - ✅ Plugin SDK
 - ✅ Compiler Pipeline com 13 passes de otimização
+- ✅ Full-Text Search (`SearchAsync<T>` nos 4 provedores)
+- ✅ Runtime Diagnostics (6 regras built-in)
 - ✅ Diagnostics Pipeline
 - ✅ Validation Pipeline
 - ✅ Execution Artifacts
+- ✅ Schema Inspection (ISchemaInspector com cache)
+- ✅ Diagnostic Telemetry (contadores + OnDiagnostic event)
+- ✅ Compile-time FTS Analysis (FM5001/FM5002)
 
 ### Futuro
 - 🔲 Query Optimizer

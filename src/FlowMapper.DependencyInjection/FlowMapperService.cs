@@ -1,5 +1,6 @@
 using FlowMapper.Abstractions;
 using FlowMapper.Deserialization;
+using FlowMapper.FullTextSearch;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FlowMapper.DependencyInjection;
@@ -69,6 +70,22 @@ public class FlowMapperService : IFlowMapper
 
     public List<T> FromText<T>(string[] lines, TextDelimiter delimiter, bool hasHeader = true)
         => _deserializer.FromText<T>(lines, delimiter, hasHeader);
+
+    public async Task<IEnumerable<T>> SearchAsync<T>(string sql, string searchTerm, string[] columns, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(sql))
+            throw new ArgumentException("SQL cannot be null or empty.", nameof(sql));
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            throw new ArgumentException("Search term cannot be null or empty.", nameof(searchTerm));
+        if (columns is null || columns.Length == 0)
+            throw new ArgumentException("Columns array cannot be null or empty.", nameof(columns));
+
+        var provider = _sp.GetRequiredService<IDatabaseProvider>();
+        var ftsCondition = provider.Dialect.BuildFreeTextCondition(columns, "@term");
+        var modifiedSql = FtsSqlInjector.InjectFtsCondition(sql, ftsCondition);
+
+        return await _rapid.QueryAsync<T>(modifiedSql, new { term = searchTerm }, null, ct).ConfigureAwait(false);
+    }
 
     public IExecutionScope CreateScope(bool transactional = false)
         => _rapid.CreateScope(transactional);

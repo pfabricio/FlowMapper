@@ -11,6 +11,13 @@ public class StubDialect : IDialect
     public string ApplyPagination(string sql, int offset, int limit) => sql;
     public string GetIdentityQuery() => "SELECT SCOPE_IDENTITY()";
     public string NormalizeParameter(string name) => $"@{name}";
+    public string BuildFreeTextCondition(IReadOnlyList<string> columns, string parameterName) => $"{string.Join(", ", columns)} @@ {parameterName}";
+    public string BuildContainsCondition(IReadOnlyList<string> columns, string parameterName) => $"CONTAINS({string.Join(", ", columns)}, {parameterName})";
+    public string BuildRankOrderBy(IReadOnlyList<string> columns, string parameterName) => "RANK DESC";
+    public string? VerifyFtsIndexSql(string table, string column) => null;
+    public string? FtsIndexErrorMessage => null;
+    public bool FtsRequiresIndex => false;
+    public bool FtsSupportsLanguage => false;
 }
 
 public class StubDatabaseProvider : IDatabaseProvider

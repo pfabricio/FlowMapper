@@ -27,72 +27,20 @@ public class PipelineExecutor : IPipelineExecutor
         _scopeFactory = scopeFactory;
     }
 
-    public async Task<IEnumerable<T>> QueryAsync<T>(
+    public Task<IEnumerable<T>> QueryAsync<T>(
         string sql, object? parameters = null,
         ExecutionOptions? options = null, CancellationToken ct = default)
     {
-        var connection = _connectionFactory.CreateConnection();
-        connection.Open();
-
-        try
-        {
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = options?.CommandType ?? CommandType.Text;
-            if (options?.Timeout.HasValue == true)
-                command.CommandTimeout = options.Timeout.Value;
-            ApplyParameters(command, parameters);
-
-            using var reader = await ExecuteReaderAsync(command, ct).ConfigureAwait(false);
-            var plan = _materializer.BuildPlan<T>();
-            var results = new List<T>();
-
-            if (reader is DbDataReader dbReader)
-            {
-                while (await dbReader.ReadAsync(ct).ConfigureAwait(false))
-                    results.Add(_materializer.Materialize<T>(reader, plan));
-            }
-            else
-            {
-                while (reader.Read())
-                    results.Add(_materializer.Materialize<T>(reader, plan));
-            }
-
-            return results;
-        }
-        finally
-        {
-            connection.Close();
-            connection.Dispose();
-        }
+        var context = new ExecutionContext<IEnumerable<T>>(sql, parameters, options);
+        return RunWithBehaviors(context, ct, () => ExecuteQueryAsync<T>(context, ct));
     }
 
-    public async Task<int> ExecuteAsync(
+    public Task<int> ExecuteAsync(
         string sql, object? parameters = null,
         ExecutionOptions? options = null, CancellationToken ct = default)
     {
-        var connection = _connectionFactory.CreateConnection();
-        connection.Open();
-
-        try
-        {
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-            command.CommandType = options?.CommandType ?? CommandType.Text;
-            if (options?.Timeout.HasValue == true)
-                command.CommandTimeout = options.Timeout.Value;
-            ApplyParameters(command, parameters);
-
-            if (command is DbCommand dbCmd)
-                return await dbCmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-
-            return command.ExecuteNonQuery();
-        }
-        finally
-        {
-            connection.Close();
-            connection.Dispose();
-        }
+        var context = new ExecutionContext<int>(sql, parameters, options);
+        return RunWithBehaviors(context, ct, () => ExecuteNonQueryAsync(context, ct));
     }
 
     public async IAsyncEnumerable<T> StreamAsync<T>(
@@ -121,6 +69,113 @@ public class PipelineExecutor : IPipelineExecutor
                 while (reader.Read())
                     yield return _materializer.Materialize<T>(reader, plan);
             }
+        }
+        finally
+        {
+            connection.Close();
+            connection.Dispose();
+        }
+    }
+
+    private async Task<TResult> RunWithBehaviors<TResult>(
+        ExecutionContext<TResult> context, CancellationToken ct, Func<Task> coreAction)
+    {
+        var index = 0;
+
+        async Task ExecuteChain()
+        {
+            if (index >= _behaviors.Count)
+            {
+                await coreAction();
+                return;
+            }
+
+            var behavior = _behaviors[index++];
+
+            if (!behavior.ShouldExecute(context))
+            {
+                await ExecuteChain();
+                return;
+            }
+
+            await behavior.HandleAsync(context, ExecuteChain);
+        }
+
+        context.Phase = ExecutionPhase.BeforeExecute;
+
+        await ExecuteChain();
+
+        context.Phase = ExecutionPhase.Completed;
+        return context.Result!;
+    }
+
+    private async Task ExecuteQueryAsync<T>(ExecutionContext<IEnumerable<T>> context, CancellationToken ct)
+    {
+        var sql = context.Sql;
+        var parameters = context.Parameters;
+        var options = context.Options;
+
+        var connection = _connectionFactory.CreateConnection();
+        connection.Open();
+
+        try
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.CommandType = options?.CommandType ?? CommandType.Text;
+            if (options?.Timeout.HasValue == true)
+                command.CommandTimeout = options.Timeout.Value;
+            ApplyParameters(command, parameters);
+
+            using var reader = await ExecuteReaderAsync(command, ct).ConfigureAwait(false);
+            var plan = _materializer.BuildPlan<T>();
+            var results = new List<T>();
+
+            if (reader is DbDataReader dbReader)
+            {
+                while (await dbReader.ReadAsync(ct).ConfigureAwait(false))
+                    results.Add(_materializer.Materialize<T>(reader, plan));
+            }
+            else
+            {
+                while (reader.Read())
+                    results.Add(_materializer.Materialize<T>(reader, plan));
+            }
+
+            context.Result = results.AsEnumerable();
+        }
+        finally
+        {
+            connection.Close();
+            connection.Dispose();
+        }
+    }
+
+    private async Task ExecuteNonQueryAsync(ExecutionContext<int> context, CancellationToken ct)
+    {
+        var sql = context.Sql;
+        var parameters = context.Parameters;
+        var options = context.Options;
+
+        var connection = _connectionFactory.CreateConnection();
+        connection.Open();
+
+        try
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.CommandType = options?.CommandType ?? CommandType.Text;
+            if (options?.Timeout.HasValue == true)
+                command.CommandTimeout = options.Timeout.Value;
+            ApplyParameters(command, parameters);
+
+            int result;
+            if (command is DbCommand dbCmd)
+                result = await dbCmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            else
+                result = command.ExecuteNonQuery();
+
+            context.Result = result;
         }
         finally
         {

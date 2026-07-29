@@ -11,6 +11,7 @@
     <Project Path="src/FlowMapper.DependencyInjection/FlowMapper.DependencyInjection.csproj" />
     <Project Path="src/FlowMapper.Diagnostics/FlowMapper.Diagnostics.csproj" />
     <Project Path="src/FlowMapper.Execution/FlowMapper.Execution.csproj" />
+    <Project Path="src/FlowMapper.FullTextSearch/FlowMapper.FullTextSearch.csproj" />
     <Project Path="src/FlowMapper.Mapping/FlowMapper.Mapping.csproj" />
     <Project Path="src/FlowMapper.Materializer/FlowMapper.Materializer.csproj" />
     <Project Path="src/FlowMapper.PluginSdk/FlowMapper.PluginSdk.csproj" />
