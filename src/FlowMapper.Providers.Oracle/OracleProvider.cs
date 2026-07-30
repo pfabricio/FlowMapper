@@ -7,16 +7,23 @@ namespace FlowMapper.Providers.Oracle;
 public class OracleProvider : IDatabaseProvider
 {
     private readonly string _connectionString;
+    private readonly OracleDialect _dialect;
 
     public string Name => "Oracle";
 
-    public IDialect Dialect => new OracleDialect();
+    public IDialect Dialect => _dialect;
 
     public Version Version => new(2, 0);
 
     public OracleProvider(string connectionString)
+        : this(connectionString, null)
+    {
+    }
+
+    public OracleProvider(string connectionString, string? ftsLanguage)
     {
         _connectionString = connectionString;
+        _dialect = new OracleDialect(ftsLanguage);
     }
 
     public IDbConnection CreateConnection() =>

@@ -20,8 +20,9 @@ public class FlowMapperBuilder
     public FlowMapperBuilder AddProvider<TProvider>(string connectionString)
         where TProvider : class, IDatabaseProvider
     {
+        var ftsLanguage = _options.Data.FtsLanguage;
         _services.AddSingleton<IDatabaseProvider>(sp =>
-            ActivatorUtilities.CreateInstance<TProvider>(sp, connectionString));
+            ActivatorUtilities.CreateInstance<TProvider>(sp, connectionString, ftsLanguage!));
         return this;
     }
 

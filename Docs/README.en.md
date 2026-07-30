@@ -177,7 +177,7 @@ src/
 ├── FlowMapper.Compiler/                 # Compilation pipeline with 13 optimization passes
 ├── FlowMapper.Runtime/                  # Runtime implementations (query, command, stream executors)
 ├── FlowMapper.Deserialization/          # JSON, XML, TXT deserialization
-├── FlowMapper.FullTextSearch/           # Full-text search engine (SearchFtsAsync, FtsSqlInjector)
+├── FlowMapper.FullTextSearch/           # Full-text search engine (FtsSqlInjector, FullTextIndexRegistry)
 ├── FlowMapper.FullTextSearch.Abstractions/ # FTS abstractions (IFullTextIndexRegistry, FtsIndexState)
 ├── FlowMapper.Diagnostics/              # Diagnostics pipeline with middlewares
 ├── FlowMapper.Validation/               # Rule-based validation pipeline
@@ -572,6 +572,9 @@ var list = flow.FromText<UserDto>(lines,
 | Pagination | `OFFSET x ROWS FETCH NEXT y ROWS ONLY` |
 | Identity | `SELECT SCOPE_IDENTITY()` |
 | Parameters | `@name` |
+| FTS Condition | `FREETEXT((cols), @term)` |
+| FTS Requires Index | ✅ Yes (Full-Text Catalog) |
+| FTS Language Support | ❌ No |
 
 ```csharp
 builder.AddProvider<SqlServerProvider>("Server=localhost;Database=MyDb;Trusted_Connection=True;");
@@ -586,6 +589,9 @@ builder.AddProvider<SqlServerProvider>("Server=localhost;Database=MyDb;Trusted_C
 | Pagination | `LIMIT y OFFSET x` |
 | Identity | `SELECT LASTVAL()` |
 | Parameters | `@name` |
+| FTS Condition | `to_tsvector('english', cols) @@ plainto_tsquery('english', @term)` |
+| FTS Requires Index | ❌ No |
+| FTS Language Support | ✅ Yes (default: `english`, configurable via `DataOptions.FtsLanguage` or `PostgreSqlDialect(ftsLanguage)`) |
 
 ```csharp
 builder.AddProvider<PostgreSqlProvider>("Host=localhost;Database=MyDb;Username=user;Password=pass;");
@@ -600,6 +606,9 @@ builder.AddProvider<PostgreSqlProvider>("Host=localhost;Database=MyDb;Username=u
 | Pagination | `LIMIT y OFFSET x` |
 | Identity | `SELECT LAST_INSERT_ID()` |
 | Parameters | `@name` |
+| FTS Condition | `MATCH(cols) AGAINST (@term IN NATURAL LANGUAGE MODE)` |
+| FTS Requires Index | ❌ No |
+| FTS Language Support | ❌ No |
 
 ```csharp
 builder.AddProvider<MySqlProvider>("Server=localhost;Database=MyDb;Uid=root;Pwd=pass;");
@@ -614,6 +623,9 @@ builder.AddProvider<MySqlProvider>("Server=localhost;Database=MyDb;Uid=root;Pwd=
 | Pagination | ROWNUM subquery |
 | Identity | `SELECT LAST_INSERT_ID()` |
 | Parameters | `:name` |
+| FTS Condition | `CONTAINS(cols, @term, 1) > 0` |
+| FTS Requires Index | ✅ Yes (Oracle Text index) |
+| FTS Language Support | ❌ No |
 
 ```csharp
 builder.AddProvider<OracleProvider>("Data Source=localhost:1521/MyDb;User Id=user;Password=pass;");
@@ -639,22 +651,33 @@ services.AddFlowMapper(builder =>
     // Mapping profile
     builder.AddProfile<AppProfile>();
 
-    // Database provider
+    // FTS profile (full-text search index definitions)
+    builder.AddFtsProfile<CatalogFtsProfile>();
+
+    // Database provider (with connection string)
     builder.AddProvider<SqlServerProvider>("Server=...;");
 
-    // Global configuration
+    // Database provider (parameterless — reads from config)
+    builder.AddProvider<SqlServerProvider>();
+
+    // Data options
     builder.ConfigureData(opts =>
     {
         opts.DefaultTimeout = 30;
         opts.CascadeSeparator = "_";
+        opts.FtsLanguage = "portuguese"; // PostgreSQL only
         opts.Retry.Enabled = true;
         opts.Retry.MaxRetries = 3;
         opts.Retry.InitialDelayMs = 100;
     });
+
+    // Mapping options
     builder.ConfigureMapping(opts =>
     {
         opts.DefaultProfile = "AppProfile";
         opts.EnableFlatten = true;
+        opts.PreferConstructorMapping = false;
+        opts.EnableCache = true;
         opts.Strictness = StrictnessLevel.Warning;
     });
 });

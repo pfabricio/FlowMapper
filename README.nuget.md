@@ -269,28 +269,40 @@ var list = _flow.FromText<UserDto>(lines, TextDelimiter.Semicolon, hasHeader: fa
 ```csharp
 services.AddFlowMapper(builder =>
 {
-    // Providers
+    // Providers (with connection string)
     builder.AddProvider<SqlServerProvider>(connectionString);
     builder.AddProvider<PostgreSqlProvider>(connectionString);
     builder.AddProvider<MySqlProvider>(connectionString);
     builder.AddProvider<OracleProvider>(connectionString);
 
+    // Provider (parameterless — reads connection from config)
+    builder.AddProvider<SqlServerProvider>();
+
     // Profiles (mapping definitions)
     builder.AddProfile<AppProfile>();
 
-    // Behaviors
-    builder.AddBehavior<LoggingBehavior>();
-    builder.AddBehavior<CachingBehavior>();
+    // FTS profiles (full-text search index definitions)
+    builder.AddFtsProfile<CatalogFtsProfile>();
 
-    // Options
-    builder.ConfigureData(opts => opts.CascadeSeparator = "_");
-    builder.ConfigureMapping(opts => opts.EnableFlatten = true);
+    // Data options
+    builder.ConfigureData(opts =>
+    {
+        opts.CascadeSeparator = "_";
+        opts.DefaultTimeout = 30;
+        opts.FtsLanguage = "portuguese"; // PostgreSQL only
+        opts.Retry.Enabled = true;
+        opts.Retry.MaxRetries = 3;
+        opts.Retry.InitialDelayMs = 100;
+    });
 
-    // Naming strategy
-    builder.UseNamingStrategy<PascalCaseNamingStrategy>();
-
-    // Retry
-    builder.UseRetryStrategy(retry => retry.MaxRetries = 3);
+    // Mapping options
+    builder.ConfigureMapping(opts =>
+    {
+        opts.EnableFlatten = true;
+        opts.PreferConstructorMapping = false;
+        opts.EnableCache = true;
+        opts.Strictness = StrictnessLevel.Warning;
+    });
 });
 
 var flow = sp.GetRequiredService<IFlowMapper>();
@@ -311,7 +323,8 @@ var flow = sp.GetRequiredService<IFlowMapper>();
 | `FlowMapper.Providers.*` | Database providers (SQL Server, PostgreSQL, MySQL, Oracle) |
 | `FlowMapper.SourceGenerator` | Incremental source generator for compile-time mapper stubs |
 | `FlowMapper.Compiler` | Compilation pipeline with 13 optimization passes |
-| `FlowMapper.FullTextSearch` | FTS condition injection, `IFullTextIndexRegistry`, `FtsProfileDefinition` |
+| `FlowMapper.FullTextSearch` | FTS condition injection, `FtsSqlInjector`, `FullTextIndexRegistry` |
+| `FlowMapper.FullTextSearch.Abstractions` | `IFullTextIndexRegistry`, `FtsIndexState`, `FtsProfileDefinition` |
 | `FlowMapper.Mapping` | Object-object mapping pipeline with middlewares |
 | `FlowMapper.Validation` | Rule-based validation pipeline |
 | `FlowMapper.Diagnostics` | `DiagnosticEngine`, `SchemaInspector`, 6 rules, `IDiagnosticTelemetry` |

@@ -12,6 +12,7 @@ public class DataOptions
     public string CascadeSeparator { get; set; } = "_";
     public MappingOptions Mapping { get; set; } = new();
     public RetryOptions Retry { get; set; } = new();
+    public string? FtsLanguage { get; set; }
 }
 
 public class RetryOptions

@@ -7,16 +7,23 @@ namespace FlowMapper.Providers.SqlServer;
 public class SqlServerProvider : IDatabaseProvider
 {
     private readonly string _connectionString;
+    private readonly SqlServerDialect _dialect;
 
     public string Name => "SqlServer";
 
-    public IDialect Dialect => new SqlServerDialect();
+    public IDialect Dialect => _dialect;
 
     public Version Version => new(2, 0);
 
     public SqlServerProvider(string connectionString)
+        : this(connectionString, null)
+    {
+    }
+
+    public SqlServerProvider(string connectionString, string? ftsLanguage)
     {
         _connectionString = connectionString;
+        _dialect = new SqlServerDialect(ftsLanguage);
     }
 
     public IDbConnection CreateConnection() =>

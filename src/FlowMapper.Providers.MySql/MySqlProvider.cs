@@ -7,16 +7,23 @@ namespace FlowMapper.Providers.MySql;
 public class MySqlProvider : IDatabaseProvider
 {
     private readonly string _connectionString;
+    private readonly MySqlDialect _dialect;
 
     public string Name => "MySQL";
 
-    public IDialect Dialect => new MySqlDialect();
+    public IDialect Dialect => _dialect;
 
     public Version Version => new(2, 0);
 
     public MySqlProvider(string connectionString)
+        : this(connectionString, null)
+    {
+    }
+
+    public MySqlProvider(string connectionString, string? ftsLanguage)
     {
         _connectionString = connectionString;
+        _dialect = new MySqlDialect(ftsLanguage);
     }
 
     public IDbConnection CreateConnection() =>

@@ -7,16 +7,23 @@ namespace FlowMapper.Providers.PostgreSql;
 public class PostgreSqlProvider : IDatabaseProvider
 {
     private readonly string _connectionString;
+    private readonly PostgreSqlDialect _dialect;
 
     public string Name => "PostgreSQL";
 
-    public IDialect Dialect => new PostgreSqlDialect();
+    public IDialect Dialect => _dialect;
 
     public Version Version => new(2, 0);
 
     public PostgreSqlProvider(string connectionString)
+        : this(connectionString, null)
+    {
+    }
+
+    public PostgreSqlProvider(string connectionString, string? ftsLanguage)
     {
         _connectionString = connectionString;
+        _dialect = new PostgreSqlDialect(ftsLanguage);
     }
 
     public IDbConnection CreateConnection() =>
